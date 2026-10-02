@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">RC filter with output across resistor</title><desc id="desc">A capacitor from the input to output node and a resistor from output to ground, with output measured across the resistor.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 95h115M195 60v70M225 60v70M225 95h273M80 225h418M410 95v38M410 133l-18 10 36 20-36 20 36 20-18 10v22"/>
+    <path d="M64 95h32M64 225h32M482 95h32M482 225h32" stroke="#2f7d32"/>
+  </g>
+  <g fill="#111111"><circle cx="410" cy="95" r="6"/><circle cx="410" cy="225" r="6"/></g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
+    <text x="210" y="48" text-anchor="middle" font-style="italic">C</text><text x="447" y="173" font-style="italic">R</text><text x="40" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">in</tspan></text><text x="555" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">out</tspan></text><text x="320" y="272" text-anchor="middle" font-size="17">output measured across R</text>
+  </g>
+</svg>

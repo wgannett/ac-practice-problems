@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Randomized, verified AC impedance practice problems for introductory electronics students.">
+  <title>AC Circuit Practice Problem Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">AC circuit practice problem generator</h1>
+    </section>
+
+    <section class="workspace" aria-label="Practice problem generator">
+      <aside class="controls">
+        <div class="control-group">
+          <label for="problem-set">Problem set</label>
+          <div class="select-wrap">
+            <select id="problem-set">
+              <option value="mixed">Mixed practice</option>
+              <option value="impedance">Equivalent impedance</option>
+              <option value="advanced">Multi-component impedance</option>
+              <option value="phasors">Currents &amp; voltages</option>
+              <option value="unknown">Unknown values</option>
+              <option value="power">Resistor power</option>
+              <option value="filters">Filters</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group focus-note">
+          <span class="control-label">Practice scope</span>
+          <p>Ideal components, RMS phasors, and source phase 0°. Resistance and reactance stay within a factor of five.</p>
+        </div>
+
+        <div class="conventions">
+          <h2>Conventions</h2>
+          <dl>
+            <div><dt>Frequency</dt><dd>f in hertz</dd></div>
+            <div><dt>Angular frequency</dt><dd>ω = 2πf</dd></div>
+            <div><dt>Phase</dt><dd>degrees</dd></div>
+            <div><dt>Precision</dt><dd>3 significant figures</dd></div>
+          </dl>
+        </div>
+      </aside>
+
+      <article class="problem-card" aria-live="polite">
+        <div class="problem-topline">
+          <span id="problem-number">Problem 01</span>
+          <span id="problem-tag" class="topic-tag">Equivalent impedance</span>
+        </div>
+
+        <div class="prompt-block">
+          <h2 id="problem-prompt">Find the equivalent impedance seen by the source.</h2>
+          <p id="problem-detail">Express the result in rectangular and polar form.</p>
+        </div>
+
+        <div class="problem-body">
+          <div id="circuit" class="circuit" aria-label="Circuit diagram"></div>
+          <div class="given-panel">
+            <h3>Given</h3>
+            <dl id="given-values"></dl>
+          </div>
+        </div>
+
+        <div class="answer-area">
+          <div id="answer-placeholder" class="answer-placeholder">
+            <span class="pencil">✎</span>
+            <p>Work the problem on paper before revealing the answer.</p>
+          </div>
+
+          <div id="answer-panel" class="answer-panel" hidden>
+            <div class="answer-heading">
+              <span>Answer</span>
+              <span class="checkmark" aria-hidden="true">✓</span>
+            </div>
+            <div id="final-answer" class="final-answer"></div>
+            <details>
+              <summary>Show calculation</summary>
+              <div id="solution-steps" class="solution-steps"></div>
+            </details>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="reveal-button" class="button button-primary" type="button">Reveal answer</button>
+          <button id="new-button" class="button button-secondary" type="button">New problem <span aria-hidden="true">→</span></button>
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><kbd>R</kbd> reveal · <kbd>N</kbd> new problem</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

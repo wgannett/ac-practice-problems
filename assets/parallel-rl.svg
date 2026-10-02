@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">Parallel RL circuit</title><desc id="desc">An AC voltage source connected to a resistor and inductor in parallel.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M100 60v57M100 183v57M100 60H540M100 240H540M315 60v35M315 191v49M470 60v40M470 172v68"/><circle cx="100" cy="150" r="33"/><path d="M77 150c9-17 16-17 24 0s15 17 24 0"/>
+    <path d="M315 95l-13 8 26 16-26 16 26 16-26 16 13 8v16M470 100c18 0 18 18 0 18c18 0 18 18 0 18c18 0 18 18 0 18c18 0 18 18 0 18"/>
+    <path d="M260 82v62" stroke="#2f7d32"/><path d="m250 133 10 15 10-15" stroke="#2f7d32"/><path d="M415 82v62" stroke="#2f7d32"/><path d="m405 133 10 15 10-15" stroke="#2f7d32"/>
+  </g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
+    <text x="345" y="151" font-style="italic">R</text><text x="505" y="148" font-style="italic">L</text><text x="43" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="226" y="111" fill="#2f7d32" font-style="italic">I<tspan baseline-shift="sub" font-size="15">R</tspan></text><text x="381" y="111" fill="#2f7d32" font-style="italic">I<tspan baseline-shift="sub" font-size="15">L</tspan></text>
+  </g>
+  <g fill="#111111"><circle cx="315" cy="60" r="6"/><circle cx="315" cy="240" r="6"/><circle cx="470" cy="60" r="6"/><circle cx="470" cy="240" r="6"/></g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">Series RLC filter with output across inductor and capacitor</title><desc id="desc">A resistor leads to a series inductor and capacitor connected to the return, with output measured across the inductor-capacitor pair.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 95h100M180 95h14l10-18 20 36 20-36 20 36 20-36 10 18h14M308 95h190M80 245h418M410 95v20c20 0 20 18 0 18c20 0 20 18 0 18c20 0 20 18 0 18c20 0 20 18 0 18v13M375 200h70M375 225h70M410 225v20"/>
+    <path d="M64 95h32M64 245h32M482 95h32M482 245h32" stroke="#2f7d32"/>
+  </g>
+  <g fill="#111111"><circle cx="410" cy="95" r="6"/><circle cx="410" cy="245" r="6"/></g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
+    <text x="244" y="152" text-anchor="middle" font-style="italic">R</text><text x="447" y="152" font-style="italic">L</text><text x="455" y="220" font-style="italic">C</text><text x="40" y="176" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">in</tspan></text><text x="555" y="176" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">out</tspan></text><text x="320" y="282" text-anchor="middle" font-size="17">output measured across series L and C</text>
+  </g>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">Series RLC circuit with component-voltage references</title>
+  <desc id="desc">An AC voltage source in series with a resistor, inductor, and capacitor. Voltage polarities are marked positive on the current-entry side of each component.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 75v42M70 183v42H570V75H500M70 75h65"/>
+    <circle cx="70" cy="150" r="33"/>
+    <path d="M47 150c9-17 16-17 24 0s15 17 24 0"/>
+    <path d="M135 75h10l8-16 16 32 16-32 16 32 16-32 8 16h10M235 75h25"/>
+    <path d="M260 75c0-20 25-20 25 0c0-20 25-20 25 0c0-20 25-20 25 0c0-20 25-20 25 0M360 75h75"/>
+    <path d="M435 42v66M465 42v66M465 75h35"/>
+    <path d="M505 225H415" stroke="#2f7d32"/>
+    <path d="m430 215-15 10 15 10" stroke="#2f7d32"/>
+  </g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
+    <text x="185" y="132" text-anchor="middle" font-style="italic">R</text>
+    <text x="310" y="132" text-anchor="middle" font-style="italic">L</text>
+    <text x="450" y="132" text-anchor="middle" font-style="italic">C</text>
+    <text x="15" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
+    <text x="460" y="260" fill="#2f7d32" text-anchor="middle" font-style="italic">I</text>
+  </g>
+  <g fill="#2f7d32" font-family="Arial, sans-serif" font-size="19">
+    <text x="140" y="35">+</text><text x="220" y="35">−</text>
+    <text x="185" y="32" text-anchor="middle" font-style="italic">V<tspan baseline-shift="sub" font-size="13">R</tspan></text>
+    <text x="260" y="35">+</text><text x="350" y="35">−</text>
+    <text x="310" y="32" text-anchor="middle" font-style="italic">V<tspan baseline-shift="sub" font-size="13">L</tspan></text>
+    <text x="415" y="35">+</text><text x="475" y="35">−</text>
+    <text x="450" y="32" text-anchor="middle" font-style="italic">V<tspan baseline-shift="sub" font-size="13">C</tspan></text>
+  </g>
+</svg>

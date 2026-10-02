@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">Series RC circuit</title><desc id="desc">An AC voltage source in series with a resistor and capacitor. Current flows clockwise.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M105 75v42M105 183v42H550V75H430M105 75h85"/>
+    <circle cx="105" cy="150" r="33"/>
+    <path d="M82 150c9-17 16-17 24 0s15 17 24 0"/>
+    <path d="M190 75h14l10-18 20 36 20-36 20 36 20-36 10 18h14M318 75h82M400 42v66M430 42v66M430 75h120"/>
+    <path d="M170 40h135" stroke="#2f7d32"/><path d="m294 30 15 10-15 10" stroke="#2f7d32"/>
+  </g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
+    <text x="254" y="132" text-anchor="middle" font-style="italic">R</text><text x="415" y="132" text-anchor="middle" font-style="italic">C</text>
+    <text x="48" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="235" y="30" fill="#2f7d32" font-style="italic">I</text>
+  </g>
+</svg>
