@@ -11,6 +11,7 @@ const values = {
 
 const circuitNames = [
   "series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl",
+  "loaded-rc-divider", "loaded-rl-divider",
   "series-r-lc", "series-r-ll", "series-r-cc",
   "parallel-r-lc", "parallel-r-ll", "parallel-r-cc",
   "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc",
@@ -184,6 +185,18 @@ function rectangular(complex, unit) {
 function polarLine(symbol, complex, unit) {
   const p = polar(complex);
   return `<div>${symbol} = ${engineering(p.magnitude, unit)} ∠ ${sig(p.angle)}°</div>`;
+}
+
+function decibels(ratioMagnitude) { return 20 * Math.log10(ratioMagnitude); }
+
+function rcFilterRatio(R, C, f, outputAcrossC) {
+  const zc = { re: 0, im: -1 / (TWO_PI * f * C) };
+  return divide(outputAcrossC ? zc : { re: R, im: 0 }, add({ re: R, im: 0 }, zc));
+}
+
+function lrFilterRatio(R, L, f, outputAcrossR) {
+  const zl = { re: 0, im: TWO_PI * f * L };
+  return divide(outputAcrossR ? { re: R, im: 0 } : zl, add({ re: R, im: 0 }, zl));
 }
 
 function circuitImage(name, alt) {
@@ -483,6 +496,75 @@ function parallelSourceCurrent() {
     steps: [`${S.ZC} = 1/(j2πfC) = −j${engineering(Xc, "Ω")}`, `${S.IR} = ${S.Vs}/R = ${engineering(ir, "A")} ∠ 0°`, `${S.IC} = ${S.Vs}/${S.ZC} = ${engineering(ic, "A")} ∠ 90°`, `${S.Is} = ${S.IR} + ${S.IC} = ${engineering(ir, "A")} + j${engineering(ic, "A")}`, `|${S.Is}| = ${engineering(p.magnitude, "A")},   ∠${S.Is} = ${sig(p.angle)}°`], result: total });
 }
 
+function loadedVoltageDivider() {
+  const useRC = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const f = pick(values.frequency), R1 = pick(values.resistance), R2 = pick(values.resistance), Vs = pick(values.voltage);
+    if (!isBalanced(R2 / R1)) return null;
+    let component, reactance, reactiveZ;
+    if (useRC) {
+      component = pick(values.capacitance);
+      reactance = 1 / (TWO_PI * f * component);
+      reactiveZ = { re: 0, im: -reactance };
+    } else {
+      component = pick(values.inductance);
+      reactance = TWO_PI * f * component;
+      reactiveZ = { re: 0, im: reactance };
+    }
+    if (!isBalanced(reactance / R2)) return null;
+    const branch = parallelZ({ re: R2, im: 0 }, reactiveZ);
+    const total = add({ re: R1, im: 0 }, branch);
+    const current = divide({ re: Vs, im: 0 }, total);
+    const vout = multiply(current, branch), angle = Math.abs(polar(vout).angle);
+    if (angle < 10 || angle > 80) return null;
+    return { f, R1, R2, Vs, component, reactance, reactiveZ, branch, total, current, vout };
+  }, "Could not generate a balanced loaded voltage divider.");
+  const { f, R1, R2, Vs, component, reactance, branch, total, vout } = selected;
+  const reactiveSymbol = useRC ? S.ZC : S.ZL, componentSymbol = useRC ? "C" : "L", componentUnit = useRC ? "F" : "H";
+  const sign = branch.im < 0 ? "−" : "+";
+  return problem({
+    type: "loadedVoltageDivider", group: "phasors", tag: "Loaded voltage divider",
+    image: useRC ? "loaded-rc-divider" : "loaded-rl-divider",
+    imageAlt: `Resistor R1 feeding a parallel R2-${componentSymbol} load with the output measured across the load`,
+    prompt: `Find the loaded output-voltage phasor ${S.Vout}.`,
+    detail: `First combine ${S.R2} and ${componentSymbol} in parallel, then use the impedance voltage divider.`,
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], [S.R1, engineering(R1, "Ω")], [S.R2, engineering(R2, "Ω")], [componentSymbol, engineering(component, componentUnit)]],
+    answer: complexLines(S.Vout, vout, "V"),
+    steps: [
+      `${reactiveSymbol} = ${useRC ? "−" : ""}j${engineering(reactance, "Ω")}`,
+      `${S.Zp} = (${S.R2}${reactiveSymbol})/(${S.R2} + ${reactiveSymbol}) = ${engineering(branch.re, "Ω")} ${sign} j${engineering(Math.abs(branch.im), "Ω")}`,
+      `Z = ${S.R1} + ${S.Zp} = ${rectangular(total, "Ω")}`,
+      `${S.Vout} = ${S.Vs}[${S.Zp}/(${S.R1} + ${S.Zp})]`,
+      `${S.Vout} = ${engineering(polar(vout).magnitude, "V")} ∠ ${sig(polar(vout).angle)}°`
+    ],
+    result: vout, circuitFamily: useRC ? "RC" : "RL",
+    dividerCheck: { ratio: divide(branch, total), sourceMagnitude: Vs }
+  });
+}
+
+function requiredSourceVoltage() {
+  const { f, R, C, Xc } = balancedRC(), targetMagnitude = pick(values.voltage);
+  const zc = { re: 0, im: -Xc }, z = add({ re: R, im: 0 }, zc);
+  const divider = divide(zc, z), requiredMagnitude = targetMagnitude / polar(divider).magnitude;
+  const vc = multiply({ re: requiredMagnitude, im: 0 }, divider);
+  return problem({
+    type: "requiredSourceVoltage", group: "phasors", tag: "Required source voltage",
+    image: "series-rc-vc", imageAlt: "Series RC circuit with the capacitor voltage marked",
+    prompt: `Find the source-voltage magnitude required to make |${S.VC}| = ${engineering(targetMagnitude, "V")}.`,
+    detail: "Treat the source as the 0° reference and use the impedance voltage-divider magnitude.",
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")], [`Desired |${S.VC}|`, engineering(targetMagnitude, "V")]],
+    answer: `<div>${S.Vs} = ${engineering(requiredMagnitude, "V")} ∠ 0°</div>`,
+    steps: [
+      `${S.ZC} = −j${engineering(Xc, "Ω")}`,
+      `${S.VC}/${S.Vs} = ${S.ZC}/(R + ${S.ZC}) = ${sig(polar(divider).magnitude)} ∠ ${sig(polar(divider).angle)}°`,
+      `|${S.Vs}| = |${S.VC}|/|${S.VC}/${S.Vs}|`,
+      `|${S.Vs}| = ${engineering(requiredMagnitude, "V")}`,
+      `Check: ${S.VC} = ${engineering(polar(vc).magnitude, "V")} ∠ ${sig(polar(vc).angle)}°`
+    ],
+    result: vc, solvedSourceMagnitude: requiredMagnitude, targetMagnitude
+  });
+}
+
 function seriesResistorPower() {
   const useRC = Math.random() < .5, Vs = pick(values.voltage);
   let f, R, reactiveGiven, impedanceStep, z, image, imageAlt;
@@ -587,15 +669,161 @@ function rlcFilterMetrics() {
     steps: [`${behavior} Therefore this is a ${filterType} filter.`, `At resonance, ${S.ZL} + ${S.ZC} = 0.`, `${S.f0} = 1/(2π√(LC)) = ${engineering(f0, "Hz")}`, `Bandwidth = R/(2πL) = ${engineering(bandwidth, "Hz")}`, `Q = 2π${S.f0}L/R = ${S.f0}/Bandwidth = ${sig(quality)}`], result: { re: f0, im: bandwidth } });
 }
 
-const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, unknownComponent, unknownFrequency, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics };
+function filterComponentDesign() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    return fc >= 100 && fc <= 100000 ? { R, component, fc } : null;
+  }, "Could not generate a filter-component design problem.");
+  const { R, component: selectedComponent, fc: selectedCutoff } = selected;
+  let component, unit, symbol, fc, image, imageAlt, formula, family;
+  if (useRC) {
+    component = selectedComponent; unit = "F"; symbol = "C"; family = "RC"; fc = selectedCutoff;
+    image = lowpass ? "rc-lowpass" : "rc-highpass";
+    imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+    formula = `C = 1/(2πR${S.fc}) = ${engineering(component, unit)}`;
+  } else {
+    component = selectedComponent; unit = "H"; symbol = "L"; family = "LR"; fc = selectedCutoff;
+    image = lowpass ? "lr-output-r" : "lr-output-l";
+    imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+    formula = `L = R/(2π${S.fc}) = ${engineering(component, unit)}`;
+  }
+  const filterType = lowpass ? "low-pass" : "high-pass";
+  return problem({
+    type: "filterComponentDesign", group: "filters", tag: `${family} filter design`, image, imageAlt,
+    prompt: `What type of filter is this? Find the required value of ${symbol}.`,
+    detail: "Choose the reactive component to produce the specified cutoff frequency.",
+    given: [["R", engineering(R, "Ω")], [S.fc, engineering(fc, "Hz")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, useRC ? `At cutoff, 1/(2π${S.fc}C) = R.` : `At cutoff, 2π${S.fc}L = R.`, formula],
+    result: { re: component, im: 0 }, angleGuard: false, designCheck: { actual: useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component), target: fc }, circuitFamily: family
+  });
+}
+
+function resonantComponentDesign() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC();
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 ? candidate : null;
+  }, "Could not generate a resonant-component design problem.");
+  const { R, L, C, f0 } = selected, solveForC = Math.random() < .5, outputAcrossR = Math.random() < .5;
+  const filterType = outputAcrossR ? "band-pass" : "band-stop";
+  const image = outputAcrossR ? "rlc-output-r" : "rlc-output-lc";
+  const imageAlt = `Series RLC filter with output across ${outputAcrossR ? "the resistor" : "the inductor-capacitor pair"}`;
+  const symbol = solveForC ? "C" : "L", component = solveForC ? C : L, unit = solveForC ? "F" : "H";
+  const knownGiven = solveForC ? ["L", engineering(L, "H")] : ["C", engineering(C, "F")];
+  const formula = solveForC ? `C = 1/[(2π${S.f0})²L]` : `L = 1/[(2π${S.f0})²C]`;
+  return problem({
+    type: "resonantComponentDesign", group: "filters", tag: "Series RLC filter design", image, imageAlt,
+    prompt: `What type of filter is this? Find ${symbol} for the specified resonant frequency.`,
+    detail: "Use the series-resonance relationship and the marked output location.",
+    given: [["R", engineering(R, "Ω")], knownGiven, [S.f0, engineering(f0, "Hz")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, `${S.f0} = 1/(2π√(LC))`, `${formula} = ${engineering(component, unit)}`],
+    result: { re: component, im: 0 }, angleGuard: false,
+    designCheck: { actual: 1 / (TWO_PI * Math.sqrt(L * C)), target: f0 }, designMode: solveForC ? "C" : "L"
+  });
+}
+
+function rlcMetricDesign() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC(), quality = candidate.X0 / candidate.R;
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 && quality >= .5 ? candidate : null;
+  }, "Could not generate an RLC metric-design problem.");
+  const { R, L, C, X0, f0 } = selected, designQ = Math.random() < .5, outputAcrossR = Math.random() < .5;
+  const bandwidth = R / (TWO_PI * L), quality = X0 / R;
+  const filterType = outputAcrossR ? "band-pass" : "band-stop";
+  const image = outputAcrossR ? "rlc-output-r" : "rlc-output-lc";
+  const imageAlt = `Series RLC filter with output across ${outputAcrossR ? "the resistor" : "the inductor-capacitor pair"}`;
+  const metricName = designQ ? "quality factor" : "bandwidth";
+  const metricGiven = designQ ? ["Q", sig(quality)] : ["Bandwidth", engineering(bandwidth, "Hz")];
+  const calculation = designQ
+    ? `R = √(L/C)/Q = ${engineering(R, "Ω")}`
+    : `R = 2πL(Bandwidth) = ${engineering(R, "Ω")}`;
+  return problem({
+    type: "rlcMetricDesign", group: "filters", tag: "Series RLC filter design", image, imageAlt,
+    prompt: `What type of filter is this? Find R for the specified ${metricName}.`,
+    detail: "Use the series-RLC bandwidth or quality-factor relationship.",
+    given: [["L", engineering(L, "H")], ["C", engineering(C, "F")], [S.f0, engineering(f0, "Hz")], metricGiven],
+    answer: `<div>Filter type: ${filterType}</div><div>R = ${engineering(R, "Ω")}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, designQ ? `Q = √(L/C)/R` : `Bandwidth = R/(2πL)`, calculation],
+    result: { re: R, im: 0 }, angleGuard: false,
+    designCheck: { actual: designQ ? X0 / R : R / (TWO_PI * L), target: designQ ? quality : bandwidth }, designMode: designQ ? "Q" : "bandwidth"
+  });
+}
+
+function filterFrequencyComparison() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, Vin = pick(values.voltage);
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    return fc >= 100 && fc <= 100000 ? { R, component, fc } : null;
+  }, "Could not generate a filter frequency-comparison problem.");
+  const { R, component: selectedComponent, fc: selectedCutoff } = selected;
+  let component, fc, image, imageAlt, family, ratioAt;
+  if (useRC) {
+    component = selectedComponent; fc = selectedCutoff; family = "RC";
+    image = lowpass ? "rc-lowpass" : "rc-highpass";
+    imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+    ratioAt = (f) => rcFilterRatio(R, component, f, lowpass);
+  } else {
+    component = selectedComponent; fc = selectedCutoff; family = "LR";
+    image = lowpass ? "lr-output-r" : "lr-output-l";
+    imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+    ratioAt = (f) => lrFilterRatio(R, component, f, lowpass);
+  }
+  const frequencies = [fc / 10, fc, fc * 10];
+  const rows = frequencies.map((f) => {
+    const ratio = ratioAt(f), p = polar(ratio);
+    return { f, ratio, magnitude: p.magnitude, angle: p.angle, db: decibels(p.magnitude), outputMagnitude: Vin * p.magnitude };
+  });
+  const filterType = lowpass ? "low-pass" : "high-pass", unit = useRC ? "F" : "H";
+  const answerRows = rows.map((row) => `<div>At ${engineering(row.f, "Hz")}: |${S.Vout}/${S.Vin}| = ${sig(row.magnitude)}, gain = ${sig(row.db)} dB, |${S.Vout}| = ${engineering(row.outputMagnitude, "V")}</div>`).join("");
+  return problem({
+    type: "filterFrequencyComparison", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Compare its output and gain at three frequencies.",
+    detail: `Calculate the response at 0.1${S.fc}, ${S.fc}, and 10${S.fc} using impedances.`,
+    given: [[S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)], [S.fc, engineering(fc, "Hz")]],
+    answer: `<div>Filter type: ${filterType}</div>${answerRows}`,
+    steps: [`The output location makes this a ${filterType} filter.`, `For each frequency, calculate the reactive impedance and use the impedance voltage divider.`, `Gain in dB = 20 log₁₀|${S.Vout}/${S.Vin}|.`, `At ${S.fc}, the ratio is 0.707 and the gain is −3.01 dB.`],
+    result: multiply({ re: Vin, im: 0 }, rows[1].ratio), frequencyRows: rows
+  });
+}
+
+function filterDecibelGain() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, Vin = pick(values.voltage);
+  let f, R, component, unit, ratio, image, imageAlt, family;
+  if (useRC) {
+    const selected = balancedRC(); f = selected.f; R = selected.R; component = selected.C; unit = "F"; family = "RC";
+    ratio = rcFilterRatio(R, component, f, lowpass);
+    image = lowpass ? "rc-lowpass" : "rc-highpass"; imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+  } else {
+    const selected = balancedRL(); f = selected.f; R = selected.R; component = selected.L; unit = "H"; family = "LR";
+    ratio = lrFilterRatio(R, component, f, lowpass);
+    image = lowpass ? "lr-output-r" : "lr-output-l"; imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+  }
+  const p = polar(ratio), gainDb = decibels(p.magnitude), output = multiply({ re: Vin, im: 0 }, ratio);
+  const filterType = lowpass ? "low-pass" : "high-pass";
+  return problem({
+    type: "filterDecibelGain", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Find its voltage gain in decibels and its output phasor.",
+    detail: "First use the impedance divider to find the voltage ratio, then convert its magnitude to dB.",
+    given: [["f", engineering(f, "Hz")], [S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)]],
+    answer: `<div>Filter type: ${filterType}</div><div>Gain = ${sig(gainDb)} dB</div><div>${S.Vout}/${S.Vin} = ${sig(p.magnitude)} ∠ ${sig(p.angle)}°</div>${complexLines(S.Vout, output, "V")}`,
+    steps: [`The output location makes this a ${filterType} filter.`, `Use the impedance divider to obtain |${S.Vout}/${S.Vin}| = ${sig(p.magnitude)}.`, `Gain = 20 log₁₀(${sig(p.magnitude)}) = ${sig(gainDb)} dB.`, `${S.Vout} = ${S.Vin}(${S.Vout}/${S.Vin}) = ${engineering(polar(output).magnitude, "V")} ∠ ${sig(polar(output).angle)}°`],
+    result: output, gainCheck: { ratioMagnitude: p.magnitude, db: gainDb }
+  });
+}
+
+const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, filterFrequencyComparison, filterDecibelGain };
 const sets = {
   mixed: Object.keys(generators),
   impedance: ["seriesRCImpedance", "seriesRLImpedance", "seriesRLCImpedance", "parallelRCImpedance", "parallelRLImpedance"],
   advanced: ["seriesThreeImpedance", "parallelThreeImpedance", "seriesParallelImpedance", "parallelSeriesImpedance"],
-  phasors: ["seriesCurrent", "capacitorVoltage", "seriesComponentVoltages", "parallelSourceCurrent"],
+  phasors: ["seriesCurrent", "capacitorVoltage", "seriesComponentVoltages", "parallelSourceCurrent", "loadedVoltageDivider", "requiredSourceVoltage"],
   unknown: ["unknownComponent", "unknownFrequency"],
   power: ["seriesResistorPower", "mixedResistorPower"],
-  filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics"]
+  filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics", "filterComponentDesign", "resonantComponentDesign", "rlcMetricDesign", "filterFrequencyComparison", "filterDecibelGain"]
 };
 
 function givenMarkup(items) {
