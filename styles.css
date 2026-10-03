@@ -100,6 +100,7 @@ summary { color: var(--green); font-weight: 700; cursor: pointer; }
 
 footer { margin-top: 56px; padding: 24px clamp(20px, 5vw, 72px); display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .78rem; }
 footer p { margin: 0; }
+.analytics-note { opacity: .72; text-align: center; }
 .version-label { opacity: .72; font-family: "Courier New", monospace; letter-spacing: .06em; }
 kbd { padding: 2px 5px; border: 1px solid var(--line-dark); background: var(--panel); font-family: inherit; }
 

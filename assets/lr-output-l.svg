@@ -2,11 +2,11 @@
   <title id="title">LR filter with output across inductor</title><desc id="desc">A resistor from the input to the output node and an inductor from output to ground, with output measured across the inductor.</desc>
   <rect width="640" height="300" fill="#ffffff"/>
   <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M80 95h100M180 95h14l10-18 20 36 20-36 20 36 20-36 10 18h14M308 95h190M80 225h418M410 95v30c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20v20"/>
+    <path d="M80 95h100M180 95h14l10-18 20 36 20-36 20 36 20-36 10 18h14M308 95h190M80 225h418M410 95v25c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20v25"/>
     <path d="M64 95h32M64 225h32M482 95h32M482 225h32" stroke="#2f7d32"/>
   </g>
   <g fill="#111111"><circle cx="410" cy="95" r="6"/><circle cx="410" cy="225" r="6"/></g>
   <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
-    <text x="244" y="152" text-anchor="middle" font-style="italic">R</text><text x="447" y="173" font-style="italic">L</text><text x="40" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">in</tspan></text><text x="555" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">out</tspan></text><text x="320" y="272" text-anchor="middle" font-size="17">output measured across L</text>
+    <text x="244" y="152" text-anchor="middle" font-style="italic">R</text><text x="447" y="168" font-style="italic">L</text><text x="40" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">in</tspan></text><text x="555" y="166" text-anchor="middle" fill="#2f7d32" font-style="italic">V<tspan baseline-shift="sub" font-size="15">out</tspan></text><text x="320" y="272" text-anchor="middle" font-size="17">output measured across L</text>
   </g>
 </svg>

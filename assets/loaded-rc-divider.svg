@@ -3,15 +3,15 @@
   <desc id="desc">An AC source and resistor R1 feed a parallel load made from resistor R2 and capacitor C. The output voltage is measured across the parallel load.</desc>
   <rect width="640" height="300" fill="#ffffff"/>
   <g fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M80 60v57M80 183v57M80 60h70M250 60h290M80 240h460M350 60v35M350 191v49M475 60v65M475 155v85"/>
+    <path d="M80 60v57M80 183v57M80 60h70M250 60h290M80 240h460M350 60v50M475 60v77M475 163v77"/>
     <circle cx="80" cy="150" r="33"/><path d="M57 150c9-17 16-17 24 0s15 17 24 0"/>
-    <path d="M150 60h10l8-16 16 32 16-32 16 32 16-32 8 16h10M350 95l-13 8 26 16-26 16 26 16-26 16 13 8v16M453 125h44M453 155h44"/>
+    <path d="M150 60h10l8-16 16 32 16-32 16 32 16-32 8 16h10M350 110l-13 8 26 16-26 16 26 16-26 16 13 8v50M453 137h44M453 163h44"/>
     <path d="M140 26h120" stroke="#2f7d32"/><path d="m249 16 15 10-15 10" stroke="#2f7d32"/>
   </g>
   <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
     <text x="200" y="118" text-anchor="middle" font-style="italic">R<tspan baseline-shift="sub" font-size="15">1</tspan></text>
-    <text x="380" y="151" font-style="italic">R<tspan baseline-shift="sub" font-size="15">2</tspan></text>
-    <text x="510" y="148" font-style="italic">C</text>
+    <text x="380" y="158" font-style="italic">R<tspan baseline-shift="sub" font-size="15">2</tspan></text>
+    <text x="510" y="158" font-style="italic">C</text>
     <text x="8" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
     <text x="198" y="18" fill="#2f7d32" font-style="italic">I</text>
   </g>

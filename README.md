@@ -1,14 +1,15 @@
-# AC Circuit Practice Problem Generator v0.14
+# AC Circuit Practice Problem Generator v0.15
 
 A browser-based AC circuit practice tool for introductory electronics students.
 
-## What changed from v0.13
+## What changed from v0.14
 
-- Made required-source-voltage problems magnitude-only, including their instructions, answer, and calculation steps.
-- Standardized all voltage-source symbols to circles containing drawn sinusoidal waveforms.
-- Moved source-voltage labels farther from their symbols.
-- Replaced font-dependent Unicode subscripts in circuit artwork with SVG `<tspan>` labels.
-- Updated the subtle footer version label to v0.14.
+- Added production-only GoatCounter page-view and anonymous interaction tracking.
+- Added events for generated problems, revealed answers, and category selections without sending generated values or student identifiers.
+- Added complex-number multiplication problems.
+- Changed multiplication and division prompts so zero or one operand is given in polar form; both operands are never polar.
+- Centered vertical resistors, capacitors, and inductors between their circuit rails across filter, parallel, and loaded-divider artwork.
+- Updated the subtle footer version label to v0.15.
 
 ## Included template families
 
@@ -43,15 +44,16 @@ A browser-based AC circuit practice tool for introductory electronics students.
 29. RC or LR frequency for a specified voltage gain in decibels
 30. Series-RLC resonant frequency, current, and inductor/capacitor voltages at resonance
 31. Phasor addition in polar notation, with rectangular and polar results
-32. Phasor division in polar notation, with polar and rectangular results
-33. Time-domain cosine waveform to RMS phasor conversion
-34. RMS phasor to time-domain cosine waveform conversion
+32. Complex-number multiplication with rectangular or mixed rectangular/polar inputs
+33. Complex-number division with rectangular or mixed rectangular/polar inputs
+34. Time-domain cosine waveform to RMS phasor conversion
+35. RMS phasor to time-domain cosine waveform conversion
 
 All values and answers are generated locally from explicit circuit formulas. No AI or server is involved in generating problems.
 
 ## Run it
 
-Open `ac-circuit-practice-v0.14.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required.
+Open `ac-circuit-practice-v0.15.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required. Analytics runs only at `https://wgannett.github.io/ac-practice-problems/`; local copies are not tracked.
 
 The separate source files and `assets/` directory remain available for editing. Run `node build-standalone.mjs` after making changes to rebuild the standalone file.
 

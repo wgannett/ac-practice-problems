@@ -41,13 +41,14 @@ const product = vm.runInContext("multiply({re: .05, im: .05}, {re: 0, im: -100})
 nearly(product.re, 5); nearly(product.im, -5);
 
 const generatorNames = vm.runInContext("Object.keys(generators)", context);
-if (generatorNames.length !== 34) throw new Error(`Expected 34 generators, found ${generatorNames.length}`);
+if (generatorNames.length !== 35) throw new Error(`Expected 35 generators, found ${generatorNames.length}`);
 if (source.includes("parallelResistorPower")) throw new Error("A trivial resistor-directly-across-source power template remains");
 const advancedVariants = new Map();
 const unknownVariants = new Map();
 const loadedVariants = new Set();
 const filterDesignVariants = new Map();
 const gainFrequencyVariants = new Set();
+const complexFormVariants = new Map();
 for (const name of generatorNames) {
   for (let i = 0; i < 100; i += 1) {
     const result = vm.runInContext(`generators.${name}()`, context);
@@ -128,11 +129,22 @@ for (const name of generatorNames) {
       if (operation === "add") {
         nearly(result.result.re, a.re + b.re);
         nearly(result.result.im, a.im + b.im);
-      } else {
+      } else if (operation === "multiply") {
+        nearly(result.result.re, a.re * b.re - a.im * b.im);
+        nearly(result.result.im, a.re * b.im + a.im * b.re);
+      } else if (operation === "divide") {
         const denominator = b.re * b.re + b.im * b.im;
         nearly(result.result.re, (a.re * b.re + a.im * b.im) / denominator);
         nearly(result.result.im, (a.im * b.re - a.re * b.im) / denominator);
+      } else {
+        throw new Error(`${name}: unknown operation check ${operation}`);
       }
+    }
+    if (["phasorMultiplication", "phasorDivision"].includes(name)) {
+      if (!Array.isArray(result.inputForms) || result.inputForms.length !== 2) throw new Error(`${name}: missing input-form metadata`);
+      if (result.inputForms.filter((form) => form === "polar").length > 1) throw new Error(`${name}: both operands were shown in polar form`);
+      if (!complexFormVariants.has(name)) complexFormVariants.set(name, new Set());
+      complexFormVariants.get(name).add(result.inputForms.join(":"));
     }
     if (result.waveformCheck) {
       nearly(result.waveformCheck.peak, Math.SQRT2 * result.waveformCheck.rms);
@@ -160,6 +172,12 @@ for (const [name, expected] of [["filterComponentDesign", ["RC", "LR"]], ["reson
   const variants = filterDesignVariants.get(name) || new Set();
   if (!expected.every((variant) => variants.has(variant))) throw new Error(`${name}: did not generate all design variants`);
 }
+for (const name of ["phasorMultiplication", "phasorDivision"]) {
+  const variants = complexFormVariants.get(name) || new Set();
+  for (const expected of ["rectangular:rectangular", "polar:rectangular", "rectangular:polar"]) {
+    if (!variants.has(expected)) throw new Error(`${name}: did not generate ${expected} inputs`);
+  }
+}
 
 const html = fs.readFileSync(new URL("./index.html", import.meta.url), "utf8");
 for (const id of ["problem-set", "circuit", "given-values", "answer-panel", "reveal-button", "new-button"]) {
@@ -172,7 +190,8 @@ if (!html.includes("AC circuit practice problem generator")) throw new Error("Pa
 for (const category of ["advanced", "unknown", "power", "resonance", "waveforms"]) {
   if (!html.includes(`value="${category}"`)) throw new Error(`Missing problem category: ${category}`);
 }
-if (!html.includes('<p class="version-label">v0.14</p>')) throw new Error("Visible v0.14 footer label is missing");
+if (!html.includes('<p class="version-label">v0.15</p>')) throw new Error("Visible v0.15 footer label is missing");
+if (!html.includes('<link rel="canonical" href="https://wgannett.github.io/ac-practice-problems/">')) throw new Error("Production canonical URL is missing");
 if (/Work the problem on paper|answer-placeholder|class="pencil"/.test(html)) throw new Error("Removed pre-answer prompt is still present");
 
 const assetNames = ["series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl", "loaded-rc-divider", "loaded-rl-divider", "series-r-lc", "series-r-ll", "series-r-cc", "parallel-r-lc", "parallel-r-ll", "parallel-r-cc", "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc", "parallel-r-series-lc", "parallel-r-series-ll", "parallel-r-series-cc", "series-r-parallel-rc", "rc-lowpass", "rc-highpass", "lr-output-r", "lr-output-l", "rlc-output-r", "rlc-output-lc"];
@@ -189,11 +208,40 @@ for (const name of sourceAssetNames) {
   if (!/<circle[^>]+r="3[235]"\/>\s*<path d="M ?\d+ 150 ?c/.test(svg)) throw new Error(`${name}: source does not use a drawn sinusoid`);
 }
 
-const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.14.html", import.meta.url), "utf8");
+const centeredAssetSnippets = new Map([
+  ["rc-lowpass", ["M410 95v52M375 147h70M375 173h70M410 173v52"]],
+  ["rc-highpass", ["M410 95v25l-18 10 36 20-36 20 36 20-18 10v25"]],
+  ["lr-output-r", ["M410 95v25l-18 10 36 20-36 20 36 20-18 10v25"]],
+  ["lr-output-l", ["M410 95v25c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20c20 0 20 20 0 20v25"]],
+  ["rlc-output-r", ["M410 95v25l-18 10 36 20-36 20 36 20-18 10v25"]],
+  ["loaded-rc-divider", ["M350 110l-13 8 26 16-26 16 26 16-26 16 13 8v50", "M453 137h44M453 163h44"]],
+  ["loaded-rl-divider", ["M350 110l-13 8 26 16-26 16 26 16-26 16 13 8v50", "M475 100c20 0 20 25 0 25c20 0 20 25 0 25c20 0 20 25 0 25c20 0 20 25 0 25"]],
+  ["parallel-rc", ["M315 60v50", "M470 60v77M470 163v77", "M448 137h44M448 163h44"]],
+  ["parallel-rl", ["M315 60v50", "M470 60v54M470 186v54", "M470 114c18 0 18 18 0 18c18 0 18 18 0 18c18 0 18 18 0 18c18 0 18 18 0 18"]],
+  ["series-r-parallel-rc", ["M350 110l-13 8 26 16-26 16 26 16-26 16 13 8v50", "M453 137h44M453 163h44"]]
+]);
+for (const [name, snippets] of centeredAssetSnippets) {
+  const svg = fs.readFileSync(new URL(`./assets/${name}.svg`, import.meta.url), "utf8");
+  for (const snippet of snippets) if (!svg.includes(snippet)) throw new Error(`${name}: expected centered component geometry is missing`);
+}
+
+for (const expected of [
+  'hostname: "wgannett.github.io"',
+  'pathPrefix: "/ac-practice-problems/"',
+  'endpoint: "https://wgannett.goatcounter.com/count"',
+  'no_session: true',
+  'trackUsage("problem-generated", state.set, type)',
+  'trackUsage("answer-revealed", state.set, state.problem.type)',
+  'trackUsage("category-selected", state.set)'
+]) {
+  if (!source.includes(expected)) throw new Error(`Analytics configuration is missing: ${expected}`);
+}
+
+const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.15.html", import.meta.url), "utf8");
 if (!standalone.includes("<style>") || !standalone.includes("window.CIRCUIT_ASSETS")) throw new Error("Standalone assets are not embedded");
 if (standalone.includes('href="styles.css"') || standalone.includes('src="app.js"')) throw new Error("Standalone file still references external assets");
 for (const name of assetNames) {
   if (!standalone.includes(`\"${name}\":\"data:image/svg+xml;base64,`)) throw new Error(`${name}: not embedded`);
 }
 
-console.log("Smoke test passed: 3,400 randomized problems, 34 generators, magnitude-only source-voltage checks, 22 standardized AC sources, and 28 circuit assets.");
+console.log("Smoke test passed: 3,500 randomized problems, 35 generators, mixed-form complex arithmetic, production-only usage tracking, magnitude-only source-voltage checks, centered vertical components, 22 standardized AC sources, and 28 circuit assets.");

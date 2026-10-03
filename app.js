@@ -29,6 +29,13 @@ const BALANCE_MAX = 5;
 const TARGET_ANGLES = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75];
 const PHASOR_ANGLES = [-75, -65, -55, -45, -35, -25, -15, 15, 25, 35, 45, 55, 65, 75];
 const PHASOR_MAGNITUDES = [5, 10, 12, 15, 20, 25, 30, 40, 50];
+const RECTANGULAR_COMPONENTS = [-40, -30, -25, -20, -15, -12, -10, -5, 5, 10, 12, 15, 20, 25, 30, 40];
+const COMPLEX_INPUT_FORMS = [["rectangular", "rectangular"], ["polar", "rectangular"], ["rectangular", "polar"]];
+const ANALYTICS = Object.freeze({
+  hostname: "wgannett.github.io",
+  pathPrefix: "/ac-practice-problems/",
+  endpoint: "https://wgannett.goatcounter.com/count"
+});
 const S = Object.freeze({
   ZC: "Z<sub>C</sub>", ZC1: "Z<sub>C1</sub>", ZC2: "Z<sub>C2</sub>",
   ZL: "Z<sub>L</sub>", ZL1: "Z<sub>L1</sub>", ZL2: "Z<sub>L2</sub>",
@@ -205,6 +212,22 @@ function signedAngle(angle) {
 function complexText(complex) {
   const sign = complex.im < 0 ? "−" : "+";
   return `${sig(complex.re)} ${sign} j${sig(Math.abs(complex.im))}`;
+}
+
+function randomRectangularComplex() {
+  return { re: pick(RECTANGULAR_COMPONENTS), im: pick(RECTANGULAR_COMPONENTS) };
+}
+
+function complexInputText(value, form) {
+  const p = polar(value);
+  return form === "polar" ? phasorText(p.magnitude, p.angle) : complexText(value);
+}
+
+function conversionSteps(a, b, forms) {
+  const steps = [];
+  if (forms[0] === "polar") steps.push(`Convert A to rectangular form: A = ${complexText(a)}.`);
+  if (forms[1] === "polar") steps.push(`Convert B to rectangular form: B = ${complexText(b)}.`);
+  return steps;
 }
 
 function decibels(ratioMagnitude) { return 20 * Math.log10(ratioMagnitude); }
@@ -530,24 +553,54 @@ function phasorAddition() {
   });
 }
 
+function phasorMultiplication() {
+  const selected = balancedComplex(() => {
+    const a = randomRectangularComplex(), b = randomRectangularComplex(), z = multiply(a, b);
+    return { a, b, z };
+  });
+  const { a, b, z } = selected, p = polar(z), forms = pick(COMPLEX_INPUT_FORMS);
+  const aText = complexInputText(a, forms[0]), bText = complexInputText(b, forms[1]);
+  return problem({
+    type: "phasorMultiplication", group: "waveforms", tag: "Complex multiplication",
+    image: null, imageAlt: "",
+    prompt: `Calculate <span class="math-expression">(${aText})(${bText})</span>.`,
+    detail: "Express the result in rectangular and polar form.",
+    given: [["A", aText], ["B", bText]],
+    answer: `<div>A × B = ${complexText(z)}</div><div>A × B = ${phasorText(p.magnitude, p.angle)}</div>`,
+    steps: [
+      ...conversionSteps(a, b, forms),
+      `Real part: (${sig(a.re)})(${sig(b.re)}) − (${sig(a.im)})(${sig(b.im)}) = ${sig(z.re)}`,
+      `Imaginary part: (${sig(a.re)})(${sig(b.im)}) + (${sig(a.im)})(${sig(b.re)}) = ${sig(z.im)}`,
+      `A × B = ${complexText(z)} = ${phasorText(p.magnitude, p.angle)}`
+    ],
+    result: z, operationCheck: { operation: "multiply", a, b }, inputForms: forms
+  });
+}
+
 function phasorDivision() {
   const selected = balancedComplex(() => {
-    const magnitudeA = pick(PHASOR_MAGNITUDES), angleA = pick(PHASOR_ANGLES);
-    const magnitudeB = pick(PHASOR_MAGNITUDES), angleB = pick(PHASOR_ANGLES);
-    const a = fromPolar(magnitudeA, angleA), b = fromPolar(magnitudeB, angleB), z = divide(a, b);
-    return { magnitudeA, angleA, magnitudeB, angleB, a, b, z };
+    const a = randomRectangularComplex(), b = randomRectangularComplex(), z = divide(a, b);
+    return { a, b, z };
   });
-  const { magnitudeA, angleA, magnitudeB, angleB, a, b, z } = selected, p = polar(z);
-  const numerator = phasorText(magnitudeA, angleA), denominator = phasorText(magnitudeB, angleB);
+  const { a, b, z } = selected, p = polar(z), forms = pick(COMPLEX_INPUT_FORMS);
+  const numerator = complexInputText(a, forms[0]), denominator = complexInputText(b, forms[1]);
+  const conjugate = { re: b.re, im: -b.im }, expandedNumerator = multiply(a, conjugate);
+  const denominatorMagnitudeSquared = b.re * b.re + b.im * b.im;
   return problem({
-    type: "phasorDivision", group: "waveforms", tag: "Phasor division",
+    type: "phasorDivision", group: "waveforms", tag: "Complex division",
     image: null, imageAlt: "",
     prompt: `Calculate <span class="math-fraction"><span>${numerator}</span><span>${denominator}</span></span>.`,
-    detail: "Divide the magnitudes and subtract the denominator angle from the numerator angle.",
+    detail: "Express the result in rectangular and polar form.",
     given: [["Numerator", numerator], ["Denominator", denominator]],
-    answer: `<div>Result = ${phasorText(p.magnitude, p.angle)}</div><div>Result = ${complexText(z)}</div>`,
-    steps: [`Magnitude = ${sig(magnitudeA)}/${sig(magnitudeB)} = ${sig(p.magnitude)}`, `Angle = ${sig(angleA)}° − (${sig(angleB)}°) = ${sig(p.angle)}°`, `Result = ${phasorText(p.magnitude, p.angle)} = ${complexText(z)}`],
-    result: z, operationCheck: { operation: "divide", a, b }
+    answer: `<div>Result = ${complexText(z)}</div><div>Result = ${phasorText(p.magnitude, p.angle)}</div>`,
+    steps: [
+      ...conversionSteps(a, b, forms),
+      `Multiply the numerator and denominator by the conjugate of B: ${complexText(conjugate)}.`,
+      `Numerator after multiplication: ${complexText(expandedNumerator)}`,
+      `Denominator: (${sig(b.re)})² + (${sig(b.im)})² = ${sig(denominatorMagnitudeSquared)}`,
+      `Result = ${complexText(z)} = ${phasorText(p.magnitude, p.angle)}`
+    ],
+    result: z, operationCheck: { operation: "divide", a, b }, inputForms: forms
   });
 }
 
@@ -960,7 +1013,7 @@ function resonanceCurrentVoltages() {
   });
 }
 
-const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, phasorAddition, phasorDivision, waveformToPhasor, phasorToWaveform, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, resonanceCurrentVoltages, filterFrequencyComparison, filterDecibelGain, filterGainFrequency };
+const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, phasorAddition, phasorMultiplication, phasorDivision, waveformToPhasor, phasorToWaveform, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, resonanceCurrentVoltages, filterFrequencyComparison, filterDecibelGain, filterGainFrequency };
 const sets = {
   mixed: Object.keys(generators),
   impedance: ["seriesRCImpedance", "seriesRLImpedance", "seriesRLCImpedance", "parallelRCImpedance", "parallelRLImpedance"],
@@ -970,8 +1023,41 @@ const sets = {
   power: ["seriesResistorPower", "mixedResistorPower"],
   filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics", "filterComponentDesign", "filterFrequencyComparison", "filterDecibelGain", "filterGainFrequency"],
   resonance: ["resonantComponentDesign", "rlcMetricDesign", "resonanceCurrentVoltages"],
-  waveforms: ["phasorAddition", "phasorDivision", "waveformToPhasor", "phasorToWaveform"]
+  waveforms: ["phasorAddition", "phasorMultiplication", "phasorDivision", "waveformToPhasor", "phasorToWaveform"]
 };
+
+const analyticsQueue = [];
+
+function analyticsEnabled() {
+  return typeof window !== "undefined"
+    && window.location.hostname === ANALYTICS.hostname
+    && window.location.pathname.startsWith(ANALYTICS.pathPrefix);
+}
+
+function flushAnalyticsQueue() {
+  if (!window.goatcounter || typeof window.goatcounter.count !== "function") return;
+  while (analyticsQueue.length) window.goatcounter.count(analyticsQueue.shift());
+}
+
+function trackUsage(action, category, template = "") {
+  if (!analyticsEnabled()) return;
+  const path = [action, category, template].filter(Boolean).join(":");
+  const payload = { path, title: path, event: true, no_session: true };
+  if (window.goatcounter && typeof window.goatcounter.count === "function") window.goatcounter.count(payload);
+  else analyticsQueue.push(payload);
+}
+
+function startAnalytics() {
+  if (!analyticsEnabled()) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://gc.zgo.at/count.v5.js";
+  script.dataset.goatcounter = ANALYTICS.endpoint;
+  script.crossOrigin = "anonymous";
+  script.integrity = "sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ";
+  script.addEventListener("load", flushAnalyticsQueue);
+  document.head.appendChild(script);
+}
 
 function givenMarkup(items) {
   return items.map(([name, value]) => `<div><dt>${name}</dt><dd>${value}</dd></div>`).join("");
@@ -997,16 +1083,20 @@ function newProblem() {
   $("#answer-panel").hidden = true;
   $("#reveal-button").hidden = false;
   $("#answer-panel details").open = false;
+  trackUsage("problem-generated", state.set, type);
 }
 
 function revealAnswer() {
+  if (!$("#answer-panel").hidden) return;
   $("#answer-panel").hidden = false;
   $("#reveal-button").hidden = true;
+  trackUsage("answer-revealed", state.set, state.problem.type);
 }
 
 $("#problem-set").addEventListener("change", (event) => {
   state.set = event.target.value;
   state.lastType = null;
+  trackUsage("category-selected", state.set);
   newProblem();
 });
 $("#reveal-button").addEventListener("click", revealAnswer);
@@ -1017,4 +1107,5 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "n") newProblem();
 });
 
+startAnalytics();
 newProblem();
