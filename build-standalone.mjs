@@ -18,5 +18,5 @@ if (standalone === html || standalone.includes('href="styles.css"') || standalon
   throw new Error("Standalone build failed to inline its assets.");
 }
 
-fs.writeFileSync(new URL("./ac-circuit-practice-v0.13.html", import.meta.url), standalone);
-console.log("Built ac-circuit-practice-v0.13.html");
+fs.writeFileSync(new URL("./ac-circuit-practice-v0.14.html", import.meta.url), standalone);
+console.log("Built ac-circuit-practice-v0.14.html");

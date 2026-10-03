@@ -16,7 +16,7 @@
     <text x="185" y="132" text-anchor="middle" font-style="italic">R</text>
     <text x="310" y="132" text-anchor="middle" font-style="italic">L</text>
     <text x="450" y="132" text-anchor="middle" font-style="italic">C</text>
-    <text x="15" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
+    <text x="2" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
     <text x="460" y="260" fill="#2f7d32" text-anchor="middle" font-style="italic">I</text>
   </g>
   <g fill="#2f7d32" font-family="Arial, sans-serif" font-size="19">

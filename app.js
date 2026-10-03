@@ -646,15 +646,15 @@ function requiredSourceVoltage() {
     type: "requiredSourceVoltage", group: "phasors", tag: "Required source voltage",
     image: "series-rc-vc", imageAlt: "Series RC circuit with the capacitor voltage marked",
     prompt: `Find the source-voltage magnitude required to make |${S.VC}| = ${engineering(targetMagnitude, "V")}.`,
-    detail: "Treat the source as the 0° reference and use the impedance voltage-divider magnitude.",
+    detail: "Use the impedance voltage-divider magnitude.",
     given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")], [`Desired |${S.VC}|`, engineering(targetMagnitude, "V")]],
-    answer: `<div>${S.Vs} = ${engineering(requiredMagnitude, "V")} ∠ 0°</div>`,
+    answer: `<div>|${S.Vs}| = ${engineering(requiredMagnitude, "V")}</div>`,
     steps: [
       `${S.ZC} = −j${engineering(Xc, "Ω")}`,
-      `${S.VC}/${S.Vs} = ${S.ZC}/(R + ${S.ZC}) = ${sig(polar(divider).magnitude)} ∠ ${sig(polar(divider).angle)}°`,
+      `|${S.VC}/${S.Vs}| = |${S.ZC}/(R + ${S.ZC})| = ${sig(polar(divider).magnitude)}`,
       `|${S.Vs}| = |${S.VC}|/|${S.VC}/${S.Vs}|`,
       `|${S.Vs}| = ${engineering(requiredMagnitude, "V")}`,
-      `Check: ${S.VC} = ${engineering(polar(vc).magnitude, "V")} ∠ ${sig(polar(vc).angle)}°`
+      `Check: |${S.VC}| = ${engineering(polar(vc).magnitude, "V")}`
     ],
     result: vc, solvedSourceMagnitude: requiredMagnitude, targetMagnitude
   });

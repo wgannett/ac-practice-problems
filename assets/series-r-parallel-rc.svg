@@ -7,7 +7,7 @@
     <path d="M145 26h125" stroke="#2f7d32"/><path d="m259 16 15 10-15 10" stroke="#2f7d32"/>
   </g>
   <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
-    <text x="210" y="118" text-anchor="middle" font-style="italic">R<tspan baseline-shift="sub" font-size="15">1</tspan></text><text x="380" y="151" font-style="italic">R<tspan baseline-shift="sub" font-size="15">2</tspan></text><text x="510" y="148" font-style="italic">C</text><text x="34" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="202" y="18" fill="#2f7d32" font-style="italic">I</text>
+    <text x="210" y="118" text-anchor="middle" font-style="italic">R<tspan baseline-shift="sub" font-size="15">1</tspan></text><text x="380" y="151" font-style="italic">R<tspan baseline-shift="sub" font-size="15">2</tspan></text><text x="510" y="148" font-style="italic">C</text><text x="18" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="202" y="18" fill="#2f7d32" font-style="italic">I</text>
   </g>
   <g fill="#111111"><circle cx="350" cy="60" r="6"/><circle cx="350" cy="240" r="6"/><circle cx="475" cy="60" r="6"/><circle cx="475" cy="240" r="6"/></g>
 </svg>

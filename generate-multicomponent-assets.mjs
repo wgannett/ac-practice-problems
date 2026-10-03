@@ -4,12 +4,18 @@ const outputDirectory = new URL("./assets/", import.meta.url);
 
 const pairs = {
   lc: [{ kind: "L", label: "L" }, { kind: "C", label: "C" }],
-  ll: [{ kind: "L", label: "L₁" }, { kind: "L", label: "L₂" }],
-  cc: [{ kind: "C", label: "C₁" }, { kind: "C", label: "C₂" }]
+  ll: [{ kind: "L", label: "L_1" }, { kind: "L", label: "L_2" }],
+  cc: [{ kind: "C", label: "C_1" }, { kind: "C", label: "C_2" }]
 };
 
 const esc = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-const label = (x, y, value, anchor = "middle") => `<text x="${x}" y="${y}" text-anchor="${anchor}">${esc(value)}</text>`;
+const label = (x, y, value, anchor = "middle") => {
+  const [base, subscript] = value.split("_");
+  const content = subscript
+    ? `${esc(base)}<tspan baseline-shift="sub" font-size="15">${esc(subscript)}</tspan>`
+    : esc(base);
+  return `<text x="${x}" y="${y}" text-anchor="${anchor}">${content}</text>`;
+};
 
 function horizontalComponent(kind, x, y, name) {
   let drawing;
@@ -48,7 +54,7 @@ function verticalComponent(kind, x, y, name, length = 120, labelSide = "right") 
 }
 
 function source() {
-  return `<circle cx="80" cy="150" r="35"/><path d="M 68 139 h 14 M 75 132 v 14 M 68 164 h 14"/>${label(18, 155, "Vₛ", "start")}`;
+  return `<circle cx="80" cy="150" r="35"/><path d="M 55 150 c 9 -18 17 -18 25 0 s 16 18 25 0"/>${label(8, 157, "V_s", "start")}`;
 }
 
 function wrap(title, description, content) {

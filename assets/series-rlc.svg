@@ -7,6 +7,6 @@
     <path d="M138 38h135" stroke="#2f7d32"/><path d="m262 28 15 10-15 10" stroke="#2f7d32"/>
   </g>
   <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
-    <text x="200" y="132" text-anchor="middle" font-style="italic">R</text><text x="319" y="132" text-anchor="middle" font-style="italic">L</text><text x="425" y="132" text-anchor="middle" font-style="italic">C</text><text x="25" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="202" y="28" fill="#2f7d32" font-style="italic">I</text>
+    <text x="200" y="132" text-anchor="middle" font-style="italic">R</text><text x="319" y="132" text-anchor="middle" font-style="italic">L</text><text x="425" y="132" text-anchor="middle" font-style="italic">C</text><text x="8" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="202" y="28" fill="#2f7d32" font-style="italic">I</text>
   </g>
 </svg>

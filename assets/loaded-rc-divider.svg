@@ -12,7 +12,7 @@
     <text x="200" y="118" text-anchor="middle" font-style="italic">R<tspan baseline-shift="sub" font-size="15">1</tspan></text>
     <text x="380" y="151" font-style="italic">R<tspan baseline-shift="sub" font-size="15">2</tspan></text>
     <text x="510" y="148" font-style="italic">C</text>
-    <text x="24" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
+    <text x="8" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
     <text x="198" y="18" fill="#2f7d32" font-style="italic">I</text>
   </g>
   <g fill="#2f7d32" font-family="Arial, sans-serif" font-size="20">

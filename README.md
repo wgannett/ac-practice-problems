@@ -1,13 +1,14 @@
-# AC Circuit Practice Problem Generator v0.13
+# AC Circuit Practice Problem Generator v0.14
 
 A browser-based AC circuit practice tool for introductory electronics students.
 
-## What changed from v0.12
+## What changed from v0.13
 
-- Removed generic diagrams from all Phasors & waveforms problems so they cannot be mistaken for the generated values.
-- Expanded the given-values panel into the freed space for those problems.
-- Removed the pencil icon and the “Work the problem on paper” pre-answer message.
-- Updated the subtle footer version label to v0.13.
+- Made required-source-voltage problems magnitude-only, including their instructions, answer, and calculation steps.
+- Standardized all voltage-source symbols to circles containing drawn sinusoidal waveforms.
+- Moved source-voltage labels farther from their symbols.
+- Replaced font-dependent Unicode subscripts in circuit artwork with SVG `<tspan>` labels.
+- Updated the subtle footer version label to v0.14.
 
 ## Included template families
 
@@ -50,7 +51,7 @@ All values and answers are generated locally from explicit circuit formulas. No 
 
 ## Run it
 
-Open `ac-circuit-practice-v0.13.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required.
+Open `ac-circuit-practice-v0.14.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required.
 
 The separate source files and `assets/` directory remain available for editing. Run `node build-standalone.mjs` after making changes to rebuild the standalone file.
 

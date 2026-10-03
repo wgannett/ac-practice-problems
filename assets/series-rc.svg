@@ -10,6 +10,6 @@
   </g>
   <g fill="#111111" font-family="Arial, sans-serif" font-size="22">
     <text x="254" y="132" text-anchor="middle" font-style="italic">R</text><text x="415" y="132" text-anchor="middle" font-style="italic">C</text>
-    <text x="48" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="235" y="30" fill="#2f7d32" font-style="italic">I</text>
+    <text x="33" y="158" font-style="italic">V<tspan baseline-shift="sub" font-size="15">s</tspan></text><text x="235" y="30" fill="#2f7d32" font-style="italic">I</text>
   </g>
 </svg>
