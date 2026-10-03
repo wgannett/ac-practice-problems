@@ -7,7 +7,7 @@
     .node { fill: #111; stroke: none; }
   </style>
   <circle cx="80" cy="150" r="35"/><path d="M 55 150 c 9 -18 17 -18 25 0 s 16 18 25 0"/><text x="8" y="157" text-anchor="start">V<tspan baseline-shift="sub" font-size="15">s</tspan></text>
-    <path d="M 80 115 V 65 H 160 M 260 65 H 590 V 235 H 80 V 185 M 385 65 V 90 M 385 210 V 235 M 495 65 V 90 M 495 210 V 235"/>
+    <path d="M 80 115 V 65 H 160 M 260 65 H 495 M 495 235 H 80 V 185 M 385 65 V 90 M 385 210 V 235 M 495 65 V 90 M 495 210 V 235"/>
     <circle class="node" cx="300" cy="65" r="6"/><circle class="node" cx="300" cy="235" r="6"/>
     <path d="M 160 65 h 10 l 8 -14 l 16 28 l 16 -28 l 16 28 l 16 -28 l 8 14 h 10"/><text x="210" y="35" text-anchor="middle">R</text>
     <path d="M 385 90 v 47 M 353 137 h 64 M 353 163 h 64 M 385 163 v 47"/><text x="427" y="156" text-anchor="start">C<tspan baseline-shift="sub" font-size="15">1</tspan></text>
