@@ -1,15 +1,13 @@
-# AC Circuit Practice Problem Generator v0.12
+# AC Circuit Practice Problem Generator v0.13
 
 A browser-based AC circuit practice tool for introductory electronics students.
 
-## What changed from v0.11
+## What changed from v0.12
 
-- Added inverse RC and LR filter problems that solve for frequency from a specified dB gain.
-- Added a separate RLC resonance problem set.
-- Moved resonant-component and bandwidth/quality-factor design problems into RLC resonance.
-- Added series-RLC current and component-voltage calculations at resonance.
-- Added a Phasors & waveforms problem set with phasor addition, phasor division, and conversions between sinusoidal waveforms and RMS phasors.
-- Added a subtle visible version label in the page footer.
+- Removed generic diagrams from all Phasors & waveforms problems so they cannot be mistaken for the generated values.
+- Expanded the given-values panel into the freed space for those problems.
+- Removed the pencil icon and the “Work the problem on paper” pre-answer message.
+- Updated the subtle footer version label to v0.13.
 
 ## Included template families
 
@@ -52,7 +50,7 @@ All values and answers are generated locally from explicit circuit formulas. No 
 
 ## Run it
 
-Open `ac-circuit-practice-v0.12.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required.
+Open `ac-circuit-practice-v0.13.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required.
 
 The separate source files and `assets/` directory remain available for editing. Run `node build-standalone.mjs` after making changes to rebuild the standalone file.
 

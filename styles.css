@@ -64,6 +64,7 @@ select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1p
 .math-fraction > span:first-child { padding: 0 .22em .1em; border-bottom: 1.5px solid currentColor; }
 .math-fraction > span:last-child { padding: .1em .22em 0; }
 .problem-body { min-height: 265px; padding: 18px 32px 30px; display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 26px; align-items: center; }
+.problem-body.no-circuit { min-height: 0; grid-template-columns: 1fr; padding-top: 8px; }
 .circuit { min-height: 220px; display: grid; place-items: center; border: 1px solid var(--line); background-color: #ffffff; overflow: hidden; }
 .circuit img { display: block; width: min(100%, 560px); height: auto; aspect-ratio: 640 / 300; object-fit: contain; }
 .given-panel { align-self: stretch; padding: 20px; border-left: 4px solid var(--accent); background: #f7f7f7; }
@@ -74,9 +75,6 @@ select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1p
 .given-panel dd { margin: 0; font-family: "Courier New", monospace; font-weight: 700; text-align: right; }
 
 .answer-area { margin: 0 32px; border-top: 1px dashed var(--line-dark); }
-.answer-placeholder { min-height: 100px; display: flex; align-items: center; justify-content: center; gap: 11px; color: var(--ink-soft); text-align: center; }
-.answer-placeholder p { margin: 0; font-family: inherit; }
-.pencil { color: var(--green); font-size: 1.4rem; }
 .answer-panel { padding: 20px 0 8px; }
 .answer-heading { display: flex; align-items: center; justify-content: space-between; color: var(--success); font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .checkmark { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; background: var(--success); color: white; }

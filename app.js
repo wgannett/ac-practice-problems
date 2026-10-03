@@ -12,7 +12,6 @@ const values = {
 const circuitNames = [
   "series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl",
   "loaded-rc-divider", "loaded-rl-divider",
-  "phasor-reference", "sine-wave-reference",
   "series-r-lc", "series-r-ll", "series-r-cc",
   "parallel-r-lc", "parallel-r-ll", "parallel-r-cc",
   "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc",
@@ -521,7 +520,7 @@ function phasorAddition() {
   const expression = `${phasorText(magnitudeA, angleA)} + ${phasorText(magnitudeB, angleB)}`;
   return problem({
     type: "phasorAddition", group: "waveforms", tag: "Phasor addition",
-    image: "phasor-reference", imageAlt: "Reference diagram showing two phasors and their vector sum",
+    image: null, imageAlt: "",
     prompt: `Calculate <span class="math-expression">${expression}</span>.`,
     detail: "Express the result in rectangular and polar form.",
     given: [["A", phasorText(magnitudeA, angleA)], ["B", phasorText(magnitudeB, angleB)]],
@@ -542,7 +541,7 @@ function phasorDivision() {
   const numerator = phasorText(magnitudeA, angleA), denominator = phasorText(magnitudeB, angleB);
   return problem({
     type: "phasorDivision", group: "waveforms", tag: "Phasor division",
-    image: "phasor-reference", imageAlt: "Reference diagram showing phasors on real and imaginary axes",
+    image: null, imageAlt: "",
     prompt: `Calculate <span class="math-fraction"><span>${numerator}</span><span>${denominator}</span></span>.`,
     detail: "Divide the magnitudes and subtract the denominator angle from the numerator angle.",
     given: [["Numerator", numerator], ["Denominator", denominator]],
@@ -558,7 +557,7 @@ function waveformToPhasor() {
   const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
   return problem({
     type: "waveformToPhasor", group: "waveforms", tag: "Waveform to phasor",
-    image: "sine-wave-reference", imageAlt: "Reference diagram of a sinusoidal voltage waveform",
+    image: null, imageAlt: "",
     prompt: `Convert <span class="math-expression">v(t) = ${waveform}</span> to an RMS phasor.`,
     detail: "Use cosine as the reference and convert peak amplitude to RMS.",
     given: [["Peak", engineering(peak, "V")], ["f", engineering(f, "Hz")], ["Phase", `${angle}°`]],
@@ -574,7 +573,7 @@ function phasorToWaveform() {
   const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
   return problem({
     type: "phasorToWaveform", group: "waveforms", tag: "Phasor to waveform",
-    image: "sine-wave-reference", imageAlt: "Reference diagram of a sinusoidal voltage waveform",
+    image: null, imageAlt: "",
     prompt: `Convert <span class="math-expression">V = ${phasorText(rms, angle, "V RMS")}</span> to a time-domain waveform.`,
     detail: "Use cosine form and convert the RMS magnitude to peak amplitude.",
     given: [["V", phasorText(rms, angle, "V RMS")], ["f", engineering(f, "Hz")]],
@@ -987,18 +986,20 @@ function newProblem() {
   $("#problem-tag").textContent = state.problem.tag;
   $("#problem-prompt").innerHTML = state.problem.prompt;
   $("#problem-detail").innerHTML = state.problem.detail;
-  $("#circuit").innerHTML = circuitImage(state.problem.image, state.problem.imageAlt);
+  const circuit = $("#circuit");
+  const hasCircuit = Boolean(state.problem.image);
+  circuit.hidden = !hasCircuit;
+  circuit.innerHTML = hasCircuit ? circuitImage(state.problem.image, state.problem.imageAlt) : "";
+  $(".problem-body").className = `problem-body${hasCircuit ? "" : " no-circuit"}`;
   $("#given-values").innerHTML = givenMarkup(state.problem.given);
   $("#final-answer").innerHTML = state.problem.answer;
   $("#solution-steps").innerHTML = state.problem.steps.map((step) => `<p>${step}</p>`).join("");
   $("#answer-panel").hidden = true;
-  $("#answer-placeholder").hidden = false;
   $("#reveal-button").hidden = false;
   $("#answer-panel details").open = false;
 }
 
 function revealAnswer() {
-  $("#answer-placeholder").hidden = true;
   $("#answer-panel").hidden = false;
   $("#reveal-button").hidden = true;
 }

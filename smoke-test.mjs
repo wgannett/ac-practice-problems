@@ -52,7 +52,9 @@ for (const name of generatorNames) {
   for (let i = 0; i < 100; i += 1) {
     const result = vm.runInContext(`generators.${name}()`, context);
     if (![result.result.re, result.result.im].every(Number.isFinite)) throw new Error(`${name}: non-finite result`);
-    if (!result.answer || !result.steps.length || !result.given.length || !result.image) throw new Error(`${name}: incomplete problem`);
+    if (!result.answer || !result.steps.length || !result.given.length) throw new Error(`${name}: incomplete problem`);
+    if (result.group === "waveforms" && result.image !== null) throw new Error(`${name}: phasor/waveform problems must not use a generic diagram`);
+    if (result.group !== "waveforms" && !result.image) throw new Error(`${name}: circuit diagram is missing`);
     const visibleText = [result.prompt, result.detail, result.answer, ...result.steps, ...result.given.flat()].join(" ");
     if (/[A-Za-z]_[A-Za-z]/.test(visibleText)) throw new Error(`${name}: visible underscore notation remains`);
     if (result.angleGuard !== false && result.group !== "power" && result.group !== "unknown" && name !== "cutoffFrequency" && name !== "rlcFilterMetrics") {
@@ -166,19 +168,20 @@ if (!html.includes("AC circuit practice problem generator")) throw new Error("Pa
 for (const category of ["advanced", "unknown", "power", "resonance", "waveforms"]) {
   if (!html.includes(`value="${category}"`)) throw new Error(`Missing problem category: ${category}`);
 }
-if (!html.includes('<p class="version-label">v0.12</p>')) throw new Error("Visible v0.12 footer label is missing");
+if (!html.includes('<p class="version-label">v0.13</p>')) throw new Error("Visible v0.13 footer label is missing");
+if (/Work the problem on paper|answer-placeholder|class="pencil"/.test(html)) throw new Error("Removed pre-answer prompt is still present");
 
-const assetNames = ["series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl", "loaded-rc-divider", "loaded-rl-divider", "phasor-reference", "sine-wave-reference", "series-r-lc", "series-r-ll", "series-r-cc", "parallel-r-lc", "parallel-r-ll", "parallel-r-cc", "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc", "parallel-r-series-lc", "parallel-r-series-ll", "parallel-r-series-cc", "series-r-parallel-rc", "rc-lowpass", "rc-highpass", "lr-output-r", "lr-output-l", "rlc-output-r", "rlc-output-lc"];
+const assetNames = ["series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl", "loaded-rc-divider", "loaded-rl-divider", "series-r-lc", "series-r-ll", "series-r-cc", "parallel-r-lc", "parallel-r-ll", "parallel-r-cc", "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc", "parallel-r-series-lc", "parallel-r-series-ll", "parallel-r-series-cc", "series-r-parallel-rc", "rc-lowpass", "rc-highpass", "lr-output-r", "lr-output-l", "rlc-output-r", "rlc-output-lc"];
 for (const name of assetNames) {
   const svg = fs.readFileSync(new URL(`./assets/${name}.svg`, import.meta.url), "utf8");
   if (!svg.includes("<title") || !svg.includes("<desc")) throw new Error(`${name}: missing accessible description`);
 }
 
-const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.12.html", import.meta.url), "utf8");
+const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.13.html", import.meta.url), "utf8");
 if (!standalone.includes("<style>") || !standalone.includes("window.CIRCUIT_ASSETS")) throw new Error("Standalone assets are not embedded");
 if (standalone.includes('href="styles.css"') || standalone.includes('src="app.js"')) throw new Error("Standalone file still references external assets");
 for (const name of assetNames) {
   if (!standalone.includes(`\"${name}\":\"data:image/svg+xml;base64,`)) throw new Error(`${name}: not embedded`);
 }
 
-console.log("Smoke test passed: 3,400 randomized problems, 34 generators, phasor/waveform checks, resonance checks, inverse-gain checks, and 30 circuit assets.");
+console.log("Smoke test passed: 3,400 randomized problems, 34 generators, diagram-free phasor/waveform layout, resonance checks, inverse-gain checks, and 28 circuit assets.");

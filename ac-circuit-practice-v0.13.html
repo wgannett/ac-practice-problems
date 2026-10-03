@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Randomized, verified AC impedance practice problems for introductory electronics students.">
+  <title>AC Circuit Practice Problem Generator</title>
+  <style>
+:root {
+  --ink: #111111;
+  --ink-soft: #5b5b5b;
+  --paper: #ffffff;
+  --paper-deep: #eeeeee;
+  --panel: #ffffff;
+  --line: #d8d8d8;
+  --line-dark: #777777;
+  --accent: #f1d44b;
+  --green: #2f7d32;
+  --success: #2f7d32;
+  --shadow: none;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background-color: var(--paper);
+}
+
+button, select { font: inherit; }
+button { color: inherit; }
+sub { font-size: .7em; line-height: 0; vertical-align: -.25em; }
+
+main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+.intro { padding: clamp(28px, 5vw, 52px) 0 24px; }
+.eyebrow { margin: 0 0 14px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1, .template-index h2 { font-family: inherit; }
+h1 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.65rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 650; }
+.lede { max-width: 680px; margin-bottom: 0; color: var(--ink-soft); font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.65; }
+
+.workspace { display: grid; grid-template-columns: 270px 1fr; gap: 26px; align-items: start; }
+.controls { padding: 24px; background: #ffffff; color: var(--ink); border: 1px solid var(--ink); box-shadow: var(--shadow); }
+.control-group + .control-group { margin-top: 26px; }
+.control-group label, .control-label { display: block; margin-bottom: 9px; color: var(--ink); font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.select-wrap { position: relative; }
+.select-wrap::after { content: "⌄"; position: absolute; right: 12px; top: 9px; pointer-events: none; color: var(--ink); }
+select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1px solid var(--ink); border-radius: 0; color: var(--ink); background: #ffffff; cursor: pointer; }
+.focus-note { padding: 14px; border-left: 4px solid var(--accent); background: #fffbe6; }
+.focus-note p { margin: 0; color: var(--ink-soft); font-size: .8rem; line-height: 1.55; }
+.conventions { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); }
+.conventions h2 { margin-bottom: 13px; color: var(--ink); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.conventions dl { margin: 0; }
+.conventions dl div { padding: 8px 0; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); font-size: .76rem; }
+.conventions dt { color: var(--ink-soft); }
+.conventions dd { margin: 0; text-align: right; font-family: "Courier New", monospace; }
+
+.problem-card { background: var(--panel); border: 1px solid var(--ink); box-shadow: var(--shadow); }
+.problem-topline { padding: 17px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.topic-tag { padding: 5px 9px; background: var(--accent); color: var(--ink); letter-spacing: .06em; }
+.prompt-block { padding: 28px 32px 12px; }
+.prompt-block h2 { margin-bottom: 8px; font-family: inherit; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 650; letter-spacing: -.02em; }
+.prompt-block p { color: var(--ink-soft); line-height: 1.5; }
+.math-expression { white-space: nowrap; font-family: Georgia, "Times New Roman", serif; font-weight: 500; }
+.math-fraction { display: inline-grid; grid-template-rows: auto auto; vertical-align: middle; margin: 0 .2em; font-family: Georgia, "Times New Roman", serif; font-weight: 500; text-align: center; line-height: 1.15; }
+.math-fraction > span:first-child { padding: 0 .22em .1em; border-bottom: 1.5px solid currentColor; }
+.math-fraction > span:last-child { padding: .1em .22em 0; }
+.problem-body { min-height: 265px; padding: 18px 32px 30px; display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 26px; align-items: center; }
+.problem-body.no-circuit { min-height: 0; grid-template-columns: 1fr; padding-top: 8px; }
+.circuit { min-height: 220px; display: grid; place-items: center; border: 1px solid var(--line); background-color: #ffffff; overflow: hidden; }
+.circuit img { display: block; width: min(100%, 560px); height: auto; aspect-ratio: 640 / 300; object-fit: contain; }
+.given-panel { align-self: stretch; padding: 20px; border-left: 4px solid var(--accent); background: #f7f7f7; }
+.given-panel h3 { margin-bottom: 14px; color: var(--ink); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+.given-panel dl { margin: 0; }
+.given-panel dl div { display: flex; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.given-panel dt { font-family: Georgia, serif; font-style: italic; }
+.given-panel dd { margin: 0; font-family: "Courier New", monospace; font-weight: 700; text-align: right; }
+
+.answer-area { margin: 0 32px; border-top: 1px dashed var(--line-dark); }
+.answer-panel { padding: 20px 0 8px; }
+.answer-heading { display: flex; align-items: center; justify-content: space-between; color: var(--success); font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.checkmark { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; background: var(--success); color: white; }
+.final-answer { padding: 14px 0 16px; font-family: "Courier New", monospace; font-size: clamp(1.15rem, 2.5vw, 1.55rem); font-weight: 700; line-height: 1.55; }
+.final-answer div + div { margin-top: 3px; }
+details { padding: 10px 0; border-top: 1px solid var(--paper-deep); }
+summary { color: var(--green); font-weight: 700; cursor: pointer; }
+.solution-steps { padding: 13px 0 2px; color: var(--ink-soft); font-family: "Courier New", monospace; font-size: .9rem; line-height: 1.75; }
+.solution-steps p { margin-bottom: 6px; }
+
+.actions { padding: 22px 32px 30px; display: flex; gap: 12px; }
+.button { min-height: 46px; padding: 0 20px; border: 2px solid var(--ink); font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.button:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--line); }
+.button:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgba(47, 125, 50, .35); outline-offset: 3px; }
+.button-primary { background: var(--accent); border-color: var(--ink); color: var(--ink); }
+.button-secondary { background: transparent; }
+
+.template-index { margin: 72px 0 80px; padding: 38px 0; display: grid; grid-template-columns: 1fr 1.4fr; gap: 50px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+.template-index h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 600; letter-spacing: -.03em; }
+.template-index ol { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 28px; }
+.template-index li { padding: 12px 0; break-inside: avoid; border-bottom: 1px solid var(--line); font-weight: 650; }
+.template-index li span { margin-right: 12px; color: var(--green); font-family: "Courier New", monospace; font-size: .8rem; }
+
+footer { margin-top: 56px; padding: 24px clamp(20px, 5vw, 72px); display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .78rem; }
+footer p { margin: 0; }
+.version-label { opacity: .72; font-family: "Courier New", monospace; letter-spacing: .06em; }
+kbd { padding: 2px 5px; border: 1px solid var(--line-dark); background: var(--panel); font-family: inherit; }
+
+@media (max-width: 800px) {
+  .workspace { grid-template-columns: 1fr; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .control-group + .control-group { margin-top: 0; }
+  .conventions { display: none; }
+  .problem-body { grid-template-columns: 1fr; }
+  .given-panel { display: grid; grid-template-columns: 80px 1fr; align-items: start; }
+  .given-panel dl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 20px; }
+  .template-index { grid-template-columns: 1fr; gap: 24px; }
+}
+
+@media (max-width: 540px) {
+  main { width: min(100% - 24px, 1180px); }
+  .intro { padding-top: 28px; }
+  .controls { grid-template-columns: 1fr; padding: 20px; }
+  .prompt-block, .problem-body { padding-left: 20px; padding-right: 20px; }
+  .problem-body { padding-top: 8px; }
+  .answer-area { margin: 0 20px; }
+  .actions { padding: 20px; flex-direction: column; }
+  .button { width: 100%; }
+  .given-panel { display: block; }
+  .template-index ol { columns: 1; }
+  footer { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}
+
+  </style>
+</head>
+<body>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">AC circuit practice problem generator</h1>
+    </section>
+
+    <section class="workspace" aria-label="Practice problem generator">
+      <aside class="controls">
+        <div class="control-group">
+          <label for="problem-set">Problem set</label>
+          <div class="select-wrap">
+            <select id="problem-set">
+              <option value="mixed">Mixed practice</option>
+              <option value="impedance">Equivalent impedance</option>
+              <option value="advanced">Multi-component impedance</option>
+              <option value="phasors">Currents &amp; voltages</option>
+              <option value="unknown">Unknown values</option>
+              <option value="power">Resistor power</option>
+              <option value="filters">Filters</option>
+              <option value="resonance">RLC resonance</option>
+              <option value="waveforms">Phasors &amp; waveforms</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group focus-note">
+          <span class="control-label">Practice scope</span>
+          <p>Ideal components, RMS phasors, and source phase 0°. Resistance and reactance stay within a factor of five.</p>
+        </div>
+
+        <div class="conventions">
+          <h2>Conventions</h2>
+          <dl>
+            <div><dt>Frequency</dt><dd>f in hertz</dd></div>
+            <div><dt>Angular frequency</dt><dd>ω = 2πf</dd></div>
+            <div><dt>Phase</dt><dd>degrees</dd></div>
+            <div><dt>Precision</dt><dd>3 significant figures</dd></div>
+          </dl>
+        </div>
+      </aside>
+
+      <article class="problem-card" aria-live="polite">
+        <div class="problem-topline">
+          <span id="problem-number">Problem 01</span>
+          <span id="problem-tag" class="topic-tag">Equivalent impedance</span>
+        </div>
+
+        <div class="prompt-block">
+          <h2 id="problem-prompt">Find the equivalent impedance seen by the source.</h2>
+          <p id="problem-detail">Express the result in rectangular and polar form.</p>
+        </div>
+
+        <div class="problem-body">
+          <div id="circuit" class="circuit" aria-label="Circuit diagram"></div>
+          <div class="given-panel">
+            <h3>Given</h3>
+            <dl id="given-values"></dl>
+          </div>
+        </div>
+
+        <div class="answer-area">
+          <div id="answer-panel" class="answer-panel" hidden>
+            <div class="answer-heading">
+              <span>Answer</span>
+              <span class="checkmark" aria-hidden="true">✓</span>
+            </div>
+            <div id="final-answer" class="final-answer"></div>
+            <details>
+              <summary>Show calculation</summary>
+              <div id="solution-steps" class="solution-steps"></div>
+            </details>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="reveal-button" class="button button-primary" type="button">Reveal answer</button>
+          <button id="new-button" class="button button-secondary" type="button">New problem <span aria-hidden="true">→</span></button>
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><kbd>R</kbd> reveal · <kbd>N</kbd> new problem</p>
+    <p class="version-label">v0.13</p>
+  </footer>
+
+  <script>
+window.CIRCUIT_ASSETS = {"series-rc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJDIGNpcmN1aXQ8L3RpdGxlPjxkZXNjIGlkPSJkZXNjIj5BbiBBQyB2b2x0YWdlIHNvdXJjZSBpbiBzZXJpZXMgd2l0aCBhIHJlc2lzdG9yIGFuZCBjYXBhY2l0b3IuIEN1cnJlbnQgZmxvd3MgY2xvY2t3aXNlLjwvZGVzYz4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzExMTExMSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPHBhdGggZD0iTTEwNSA3NXY0Mk0xMDUgMTgzdjQySDU1MFY3NUg0MzBNMTA1IDc1aDg1Ii8+CiAgICA8Y2lyY2xlIGN4PSIxMDUiIGN5PSIxNTAiIHI9IjMzIi8+CiAgICA8cGF0aCBkPSJNODIgMTUwYzktMTcgMTYtMTcgMjQgMHMxNSAxNyAyNCAwIi8+CiAgICA8cGF0aCBkPSJNMTkwIDc1aDE0bDEwLTE4IDIwIDM2IDIwLTM2IDIwIDM2IDIwLTM2IDEwIDE4aDE0TTMxOCA3NWg4Mk00MDAgNDJ2NjZNNDMwIDQydjY2TTQzMCA3NWgxMjAiLz4KICAgIDxwYXRoIGQ9Ik0xNzAgNDBoMTM1IiBzdHJva2U9IiMyZjdkMzIiLz48cGF0aCBkPSJtMjk0IDMwIDE1IDEwLTE1IDEwIiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjI1NCIgeT0iMTMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPlI8L3RleHQ+PHRleHQgeD0iNDE1IiB5PSIxMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+QzwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ4IiB5PSIxNTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5zPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMjM1IiB5PSIzMCIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5JPC90ZXh0PgogIDwvZz4KPC9zdmc+Cg==","series-rc-vc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJDIGNpcmN1aXQgd2l0aCBjYXBhY2l0b3Igdm9sdGFnZTwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHNvdXJjZSBpbiBzZXJpZXMgd2l0aCBhIHJlc2lzdG9yIGFuZCBjYXBhY2l0b3IsIHdpdGggY2FwYWNpdG9yIHZvbHRhZ2UgcG9zaXRpdmUgb24gdGhlIGxlZnQgcGxhdGUgYW5kIG5lZ2F0aXZlIG9uIHRoZSByaWdodCBwbGF0ZS48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMxMTExMTEiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0xMDUgNzV2NDJNMTA1IDE4M3Y0Mkg1NTBWNzVINDMwTTEwNSA3NWg4NSIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9IjE1MCIgcj0iMzMiLz48cGF0aCBkPSJNODIgMTUwYzktMTcgMTYtMTcgMjQgMHMxNSAxNyAyNCAwIi8+CiAgICA8cGF0aCBkPSJNMTkwIDc1aDE0bDEwLTE4IDIwIDM2IDIwLTM2IDIwIDM2IDIwLTM2IDEwIDE4aDE0TTMxOCA3NWg4Mk00MDAgNDJ2NjZNNDMwIDQydjY2TTQzMCA3NWgxMjAiLz4KICAgIDxwYXRoIGQ9Ik0xNzAgNDBoMTM1IiBzdHJva2U9IiMyZjdkMzIiLz48cGF0aCBkPSJtMjk0IDMwIDE1IDEwLTE1IDEwIiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjI1NCIgeT0iMTMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPlI8L3RleHQ+PHRleHQgeD0iNDE1IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5DPC90ZXh0Pjx0ZXh0IHg9IjQ4IiB5PSIxNTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5zPC90c3Bhbj48L3RleHQ+CiAgICA8dGV4dCB4PSIyMzUiIHk9IjMwIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPkk8L3RleHQ+PHRleHQgeD0iMzc4IiB5PSIxNDYiIGZpbGw9IiMyZjdkMzIiPis8L3RleHQ+PHRleHQgeD0iNDE1IiB5PSIxNDYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5DPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iNDQ2IiB5PSIxNDYiIGZpbGw9IiMyZjdkMzIiPuKIkjwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=","series-rl":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJMIGNpcmN1aXQ8L3RpdGxlPjxkZXNjIGlkPSJkZXNjIj5BbiBBQyB2b2x0YWdlIHNvdXJjZSBpbiBzZXJpZXMgd2l0aCBhIHJlc2lzdG9yIGFuZCBpbmR1Y3Rvci4gQ3VycmVudCBmbG93cyBjbG9ja3dpc2UuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTA1IDc1djQyTTEwNSAxODN2NDJINTUwVjc1SDQ2ME0xMDUgNzVoODUiLz48Y2lyY2xlIGN4PSIxMDUiIGN5PSIxNTAiIHI9IjMzIi8+PHBhdGggZD0iTTgyIDE1MGM5LTE3IDE2LTE3IDI0IDBzMTUgMTcgMjQgMCIvPgogICAgPHBhdGggZD0iTTE5MCA3NWgxNGwxMC0xOCAyMCAzNiAyMC0zNiAyMCAzNiAyMC0zNiAxMCAxOGgxNE0zMTggNzVoNDVjMC0yMiAyNC0yMiAyNCAwYzAtMjIgMjQtMjIgMjQgMGMwLTIyIDI0LTIyIDI0IDBjMC0yMiAyNC0yMiAyNCAwTTQ1OSA3NWg5MSIvPgogICAgPHBhdGggZD0iTTE3MCA0MGgxMzUiIHN0cm9rZT0iIzJmN2QzMiIvPjxwYXRoIGQ9Im0yOTQgMzAgMTUgMTAtMTUgMTAiIHN0cm9rZT0iIzJmN2QzMiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiPgogICAgPHRleHQgeD0iMjU0IiB5PSIxMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+UjwvdGV4dD48dGV4dCB4PSI0MTEiIHk9IjEzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5MPC90ZXh0Pjx0ZXh0IHg9IjQ4IiB5PSIxNTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5zPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMjM1IiB5PSIzMCIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5JPC90ZXh0PgogIDwvZz4KPC9zdmc+Cg==","series-rlc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJMQyBjaXJjdWl0PC90aXRsZT48ZGVzYyBpZD0iZGVzYyI+QW4gQUMgdm9sdGFnZSBzb3VyY2UgaW4gc2VyaWVzIHdpdGggYSByZXNpc3RvciwgaW5kdWN0b3IsIGFuZCBjYXBhY2l0b3IuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgNzV2NDJNODAgMTgzdjQySDU4MFY3NUg1MzBNODAgNzVoNzAiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzMiLz48cGF0aCBkPSJNNTcgMTUwYzktMTcgMTYtMTcgMjQgMHMxNSAxNyAyNCAwIi8+CiAgICA8cGF0aCBkPSJNMTUwIDc1aDEwbDgtMTYgMTYgMzIgMTYtMzIgMTYgMzIgMTYtMzIgOCAxNmgxME0yNTAgNzVoMjVjMC0yMCAyMi0yMCAyMiAwYzAtMjAgMjItMjAgMjIgMGMwLTIwIDIyLTIwIDIyIDBjMC0yMCAyMi0yMCAyMiAwTTM2MyA3NWg0N000MTAgNDJ2NjZNNDQwIDQydjY2TTQ0MCA3NWg5MCIvPgogICAgPHBhdGggZD0iTTEzOCAzOGgxMzUiIHN0cm9rZT0iIzJmN2QzMiIvPjxwYXRoIGQ9Im0yNjIgMjggMTUgMTAtMTUgMTAiIHN0cm9rZT0iIzJmN2QzMiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiPgogICAgPHRleHQgeD0iMjAwIiB5PSIxMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+UjwvdGV4dD48dGV4dCB4PSIzMTkiIHk9IjEzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5MPC90ZXh0Pjx0ZXh0IHg9IjQyNSIgeT0iMTMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPkM8L3RleHQ+PHRleHQgeD0iMjUiIHk9IjE1OCIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPnM8L3RzcGFuPjwvdGV4dD48dGV4dCB4PSIyMDIiIHk9IjI4IiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPkk8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K","series-rlc-voltages":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJMQyBjaXJjdWl0IHdpdGggY29tcG9uZW50LXZvbHRhZ2UgcmVmZXJlbmNlczwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHZvbHRhZ2Ugc291cmNlIGluIHNlcmllcyB3aXRoIGEgcmVzaXN0b3IsIGluZHVjdG9yLCBhbmQgY2FwYWNpdG9yLiBWb2x0YWdlIHBvbGFyaXRpZXMgYXJlIG1hcmtlZCBwb3NpdGl2ZSBvbiB0aGUgY3VycmVudC1lbnRyeSBzaWRlIG9mIGVhY2ggY29tcG9uZW50LjwvZGVzYz4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzExMTExMSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPHBhdGggZD0iTTcwIDc1djQyTTcwIDE4M3Y0Mkg1NzBWNzVINTAwTTcwIDc1aDY1Ii8+CiAgICA8Y2lyY2xlIGN4PSI3MCIgY3k9IjE1MCIgcj0iMzMiLz4KICAgIDxwYXRoIGQ9Ik00NyAxNTBjOS0xNyAxNi0xNyAyNCAwczE1IDE3IDI0IDAiLz4KICAgIDxwYXRoIGQ9Ik0xMzUgNzVoMTBsOC0xNiAxNiAzMiAxNi0zMiAxNiAzMiAxNi0zMiA4IDE2aDEwTTIzNSA3NWgyNSIvPgogICAgPHBhdGggZD0iTTI2MCA3NWMwLTIwIDI1LTIwIDI1IDBjMC0yMCAyNS0yMCAyNSAwYzAtMjAgMjUtMjAgMjUgMGMwLTIwIDI1LTIwIDI1IDBNMzYwIDc1aDc1Ii8+CiAgICA8cGF0aCBkPSJNNDM1IDQydjY2TTQ2NSA0MnY2Nk00NjUgNzVoMzUiLz4KICAgIDxwYXRoIGQ9Ik01MDUgMjI1SDQxNSIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgICA8cGF0aCBkPSJtNDMwIDIxNS0xNSAxMCAxNSAxMCIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIxODUiIHk9IjEzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5SPC90ZXh0PgogICAgPHRleHQgeD0iMzEwIiB5PSIxMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TDwvdGV4dD4KICAgIDx0ZXh0IHg9IjQ1MCIgeT0iMTMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPkM8L3RleHQ+CiAgICA8dGV4dCB4PSIxNSIgeT0iMTU4IiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+czwvdHNwYW4+PC90ZXh0PgogICAgPHRleHQgeD0iNDYwIiB5PSIyNjAiIGZpbGw9IiMyZjdkMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+STwvdGV4dD4KICA8L2c+CiAgPGcgZmlsbD0iIzJmN2QzMiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE5Ij4KICAgIDx0ZXh0IHg9IjE0MCIgeT0iMzUiPis8L3RleHQ+PHRleHQgeD0iMjIwIiB5PSIzNSI+4oiSPC90ZXh0PgogICAgPHRleHQgeD0iMTg1IiB5PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTMiPlI8L3RzcGFuPjwvdGV4dD4KICAgIDx0ZXh0IHg9IjI2MCIgeT0iMzUiPis8L3RleHQ+PHRleHQgeD0iMzUwIiB5PSIzNSI+4oiSPC90ZXh0PgogICAgPHRleHQgeD0iMzEwIiB5PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTMiPkw8L3RzcGFuPjwvdGV4dD4KICAgIDx0ZXh0IHg9IjQxNSIgeT0iMzUiPis8L3RleHQ+PHRleHQgeD0iNDc1IiB5PSIzNSI+4oiSPC90ZXh0PgogICAgPHRleHQgeD0iNDUwIiB5PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTMiPkM8L3RzcGFuPjwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=","parallel-rc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UGFyYWxsZWwgUkMgY2lyY3VpdDwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHZvbHRhZ2Ugc291cmNlIGNvbm5lY3RlZCB0byBhIHJlc2lzdG9yIGFuZCBjYXBhY2l0b3IgaW4gcGFyYWxsZWwuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTAwIDYwdjU3TTEwMCAxODN2NTdNMTAwIDYwSDU0ME0xMDAgMjQwSDU0ME0zMTUgNjB2MzVNMzE1IDE5MXY0OU00NzAgNjB2NjVNNDcwIDE1NXY4NSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjE1MCIgcj0iMzMiLz48cGF0aCBkPSJNNzcgMTUwYzktMTcgMTYtMTcgMjQgMHMxNSAxNyAyNCAwIi8+CiAgICA8cGF0aCBkPSJNMzE1IDk1bC0xMyA4IDI2IDE2LTI2IDE2IDI2IDE2LTI2IDE2IDEzIDh2MTZNNDQ4IDEyNWg0NE00NDggMTU1aDQ0Ii8+CiAgICA8cGF0aCBkPSJNMjYwIDgydjYyIiBzdHJva2U9IiMyZjdkMzIiLz48cGF0aCBkPSJtMjUwIDEzMyAxMCAxNSAxMC0xNSIgc3Ryb2tlPSIjMmY3ZDMyIi8+PHBhdGggZD0iTTQxNSA4MnY2MiIgc3Ryb2tlPSIjMmY3ZDMyIi8+PHBhdGggZD0ibTQwNSAxMzMgMTAgMTUgMTAtMTUiIHN0cm9rZT0iIzJmN2QzMiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiPgogICAgPHRleHQgeD0iMzQ1IiB5PSIxNTEiIGZvbnQtc3R5bGU9Iml0YWxpYyI+UjwvdGV4dD48dGV4dCB4PSI1MDUiIHk9IjE0OCIgZm9udC1zdHlsZT0iaXRhbGljIj5DPC90ZXh0Pjx0ZXh0IHg9IjQzIiB5PSIxNTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5zPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMjI2IiB5PSIxMTEiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+STx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5SPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMzgxIiB5PSIxMTEiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+STx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5DPC90c3Bhbj48L3RleHQ+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjMxNSIgY3k9IjYwIiByPSI2Ii8+PGNpcmNsZSBjeD0iMzE1IiBjeT0iMjQwIiByPSI2Ii8+PGNpcmNsZSBjeD0iNDcwIiBjeT0iNjAiIHI9IjYiLz48Y2lyY2xlIGN4PSI0NzAiIGN5PSIyNDAiIHI9IjYiLz48L2c+Cjwvc3ZnPgo=","parallel-rl":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UGFyYWxsZWwgUkwgY2lyY3VpdDwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHZvbHRhZ2Ugc291cmNlIGNvbm5lY3RlZCB0byBhIHJlc2lzdG9yIGFuZCBpbmR1Y3RvciBpbiBwYXJhbGxlbC48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMxMTExMTEiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0xMDAgNjB2NTdNMTAwIDE4M3Y1N00xMDAgNjBINTQwTTEwMCAyNDBINTQwTTMxNSA2MHYzNU0zMTUgMTkxdjQ5TTQ3MCA2MHY0ME00NzAgMTcydjY4Ii8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTUwIiByPSIzMyIvPjxwYXRoIGQ9Ik03NyAxNTBjOS0xNyAxNi0xNyAyNCAwczE1IDE3IDI0IDAiLz4KICAgIDxwYXRoIGQ9Ik0zMTUgOTVsLTEzIDggMjYgMTYtMjYgMTYgMjYgMTYtMjYgMTYgMTMgOHYxNk00NzAgMTAwYzE4IDAgMTggMTggMCAxOGMxOCAwIDE4IDE4IDAgMThjMTggMCAxOCAxOCAwIDE4YzE4IDAgMTggMTggMCAxOCIvPgogICAgPHBhdGggZD0iTTI2MCA4MnY2MiIgc3Ryb2tlPSIjMmY3ZDMyIi8+PHBhdGggZD0ibTI1MCAxMzMgMTAgMTUgMTAtMTUiIHN0cm9rZT0iIzJmN2QzMiIvPjxwYXRoIGQ9Ik00MTUgODJ2NjIiIHN0cm9rZT0iIzJmN2QzMiIvPjxwYXRoIGQ9Im00MDUgMTMzIDEwIDE1IDEwLTE1IiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjM0NSIgeT0iMTUxIiBmb250LXN0eWxlPSJpdGFsaWMiPlI8L3RleHQ+PHRleHQgeD0iNTA1IiB5PSIxNDgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TDwvdGV4dD48dGV4dCB4PSI0MyIgeT0iMTU4IiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+czwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjIyNiIgeT0iMTExIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPkk8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+UjwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjM4MSIgeT0iMTExIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPkk8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+TDwvdHNwYW4+PC90ZXh0PgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIj48Y2lyY2xlIGN4PSIzMTUiIGN5PSI2MCIgcj0iNiIvPjxjaXJjbGUgY3g9IjMxNSIgY3k9IjI0MCIgcj0iNiIvPjxjaXJjbGUgY3g9IjQ3MCIgY3k9IjYwIiByPSI2Ii8+PGNpcmNsZSBjeD0iNDcwIiBjeT0iMjQwIiByPSI2Ii8+PC9nPgo8L3N2Zz4K","loaded-rc-divider":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+TG9hZGVkIFJDIHZvbHRhZ2UgZGl2aWRlcjwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHNvdXJjZSBhbmQgcmVzaXN0b3IgUjEgZmVlZCBhIHBhcmFsbGVsIGxvYWQgbWFkZSBmcm9tIHJlc2lzdG9yIFIyIGFuZCBjYXBhY2l0b3IgQy4gVGhlIG91dHB1dCB2b2x0YWdlIGlzIG1lYXN1cmVkIGFjcm9zcyB0aGUgcGFyYWxsZWwgbG9hZC48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMxMTExMTEiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik04MCA2MHY1N004MCAxODN2NTdNODAgNjBoNzBNMjUwIDYwaDI5ME04MCAyNDBoNDYwTTM1MCA2MHYzNU0zNTAgMTkxdjQ5TTQ3NSA2MHY2NU00NzUgMTU1djg1Ii8+CiAgICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzMiLz48cGF0aCBkPSJNNTcgMTUwYzktMTcgMTYtMTcgMjQgMHMxNSAxNyAyNCAwIi8+CiAgICA8cGF0aCBkPSJNMTUwIDYwaDEwbDgtMTYgMTYgMzIgMTYtMzIgMTYgMzIgMTYtMzIgOCAxNmgxME0zNTAgOTVsLTEzIDggMjYgMTYtMjYgMTYgMjYgMTYtMjYgMTYgMTMgOHYxNk00NTMgMTI1aDQ0TTQ1MyAxNTVoNDQiLz4KICAgIDxwYXRoIGQ9Ik0xNDAgMjZoMTIwIiBzdHJva2U9IiMyZjdkMzIiLz48cGF0aCBkPSJtMjQ5IDE2IDE1IDEwLTE1IDEwIiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjIwMCIgeT0iMTE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPlI8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+MTwvdHNwYW4+PC90ZXh0PgogICAgPHRleHQgeD0iMzgwIiB5PSIxNTEiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Ujx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij4yPC90c3Bhbj48L3RleHQ+CiAgICA8dGV4dCB4PSI1MTAiIHk9IjE0OCIgZm9udC1zdHlsZT0iaXRhbGljIj5DPC90ZXh0PgogICAgPHRleHQgeD0iMjQiIHk9IjE1OCIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPnM8L3RzcGFuPjwvdGV4dD4KICAgIDx0ZXh0IHg9IjE5OCIgeT0iMTgiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+STwvdGV4dD4KICA8L2c+CiAgPGcgZmlsbD0iIzJmN2QzMiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIj4KICAgIDx0ZXh0IHg9IjU2MCIgeT0iODgiPis8L3RleHQ+PHRleHQgeD0iNTYwIiB5PSIyMjYiPuKIkjwvdGV4dD4KICAgIDx0ZXh0IHg9IjU4NSIgeT0iMTU4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNCI+b3V0PC90c3Bhbj48L3RleHQ+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjM1MCIgY3k9IjYwIiByPSI2Ii8+PGNpcmNsZSBjeD0iMzUwIiBjeT0iMjQwIiByPSI2Ii8+PGNpcmNsZSBjeD0iNDc1IiBjeT0iNjAiIHI9IjYiLz48Y2lyY2xlIGN4PSI0NzUiIGN5PSIyNDAiIHI9IjYiLz48L2c+Cjwvc3ZnPgo=","loaded-rl-divider":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+TG9hZGVkIFJMIHZvbHRhZ2UgZGl2aWRlcjwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHNvdXJjZSBhbmQgcmVzaXN0b3IgUjEgZmVlZCBhIHBhcmFsbGVsIGxvYWQgbWFkZSBmcm9tIHJlc2lzdG9yIFIyIGFuZCBhIGNvcmVsZXNzIGluZHVjdG9yIEwuIFRoZSBvdXRwdXQgdm9sdGFnZSBpcyBtZWFzdXJlZCBhY3Jvc3MgdGhlIHBhcmFsbGVsIGxvYWQuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgNjB2NTdNODAgMTgzdjU3TTgwIDYwaDcwTTI1MCA2MGgyOTBNODAgMjQwaDQ2ME0zNTAgNjB2MzVNMzUwIDE5MXY0OU00NzUgNjB2MzVNNDc1IDE5NXY0NSIvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSIxNTAiIHI9IjMzIi8+PHBhdGggZD0iTTU3IDE1MGM5LTE3IDE2LTE3IDI0IDBzMTUgMTcgMjQgMCIvPgogICAgPHBhdGggZD0iTTE1MCA2MGgxMGw4LTE2IDE2IDMyIDE2LTMyIDE2IDMyIDE2LTMyIDggMTZoMTBNMzUwIDk1bC0xMyA4IDI2IDE2LTI2IDE2IDI2IDE2LTI2IDE2IDEzIDh2MTYiLz4KICAgIDxwYXRoIGQ9Ik00NzUgOTVjMjAgMCAyMCAyNSAwIDI1YzIwIDAgMjAgMjUgMCAyNWMyMCAwIDIwIDI1IDAgMjVjMjAgMCAyMCAyNSAwIDI1Ii8+CiAgICA8cGF0aCBkPSJNMTQwIDI2aDEyMCIgc3Ryb2tlPSIjMmY3ZDMyIi8+PHBhdGggZD0ibTI0OSAxNiAxNSAxMC0xNSAxMCIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjExOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5SPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPjE8L3RzcGFuPjwvdGV4dD4KICAgIDx0ZXh0IHg9IjM4MCIgeT0iMTUxIiBmb250LXN0eWxlPSJpdGFsaWMiPlI8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+MjwvdHNwYW4+PC90ZXh0PgogICAgPHRleHQgeD0iNTEwIiB5PSIxNTQiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TDwvdGV4dD4KICAgIDx0ZXh0IHg9IjI0IiB5PSIxNTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5zPC90c3Bhbj48L3RleHQ+CiAgICA8dGV4dCB4PSIxOTgiIHk9IjE4IiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPkk8L3RleHQ+CiAgPC9nPgogIDxnIGZpbGw9IiMyZjdkMzIiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCI+CiAgICA8dGV4dCB4PSI1NjAiIHk9Ijg4Ij4rPC90ZXh0Pjx0ZXh0IHg9IjU2MCIgeT0iMjI2Ij7iiJI8L3RleHQ+CiAgICA8dGV4dCB4PSI1ODUiIHk9IjE1OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTQiPm91dDwvdHNwYW4+PC90ZXh0PgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIj48Y2lyY2xlIGN4PSIzNTAiIGN5PSI2MCIgcj0iNiIvPjxjaXJjbGUgY3g9IjM1MCIgY3k9IjI0MCIgcj0iNiIvPjxjaXJjbGUgY3g9IjQ3NSIgY3k9IjYwIiByPSI2Ii8+PGNpcmNsZSBjeD0iNDc1IiBjeT0iMjQwIiByPSI2Ii8+PC9nPgo8L3N2Zz4K","series-r-lc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFIgTEMgY2lyY3VpdDwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPk9uZSByZXNpc3RvciBhbmQgdHdvIHJlYWN0aXZlIGNvbXBvbmVudHMgY29ubmVjdGVkIGluIHNlcmllcyB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNzUgSCAxNDAgTSAyNDAgNzUgSCAyNjAgTSAzNjAgNzUgSCAzODAgTSA0ODAgNzUgSCA1NjAgViAyMjUgSCA4MCBWIDE4NSIvPgogICAgPHBhdGggZD0iTSAxNDAgNzUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjE5MCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDI2MCA3NSBoIDEwIGMgMCAtMTggMjAgLTE4IDIwIDAgYyAwIC0xOCAyMCAtMTggMjAgMCBjIDAgLTE4IDIwIC0xOCAyMCAwIGMgMCAtMTggMjAgLTE4IDIwIDAgaCAxMCIvPjx0ZXh0IHg9IjMxMCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkw8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDM4MCA3NSBoIDM1IE0gNDE1IDQzIHYgNjQgTSA0NDUgNDMgdiA2NCBNIDQ0NSA3NSBoIDM1Ii8+PHRleHQgeD0iNDMwIiB5PSI0NSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QzwvdGV4dD4KPC9zdmc+Cg==","series-r-ll":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFIgTEwgY2lyY3VpdDwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPk9uZSByZXNpc3RvciBhbmQgdHdvIHJlYWN0aXZlIGNvbXBvbmVudHMgY29ubmVjdGVkIGluIHNlcmllcyB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNzUgSCAxNDAgTSAyNDAgNzUgSCAyNjAgTSAzNjAgNzUgSCAzODAgTSA0ODAgNzUgSCA1NjAgViAyMjUgSCA4MCBWIDE4NSIvPgogICAgPHBhdGggZD0iTSAxNDAgNzUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjE5MCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDI2MCA3NSBoIDEwIGMgMCAtMTggMjAgLTE4IDIwIDAgYyAwIC0xOCAyMCAtMTggMjAgMCBjIDAgLTE4IDIwIC0xOCAyMCAwIGMgMCAtMTggMjAgLTE4IDIwIDAgaCAxMCIvPjx0ZXh0IHg9IjMxMCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkzigoE8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDM4MCA3NSBoIDEwIGMgMCAtMTggMjAgLTE4IDIwIDAgYyAwIC0xOCAyMCAtMTggMjAgMCBjIDAgLTE4IDIwIC0xOCAyMCAwIGMgMCAtMTggMjAgLTE4IDIwIDAgaCAxMCIvPjx0ZXh0IHg9IjQzMCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkzigoI8L3RleHQ+Cjwvc3ZnPgo=","series-r-cc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFIgQ0MgY2lyY3VpdDwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPk9uZSByZXNpc3RvciBhbmQgdHdvIHJlYWN0aXZlIGNvbXBvbmVudHMgY29ubmVjdGVkIGluIHNlcmllcyB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNzUgSCAxNDAgTSAyNDAgNzUgSCAyNjAgTSAzNjAgNzUgSCAzODAgTSA0ODAgNzUgSCA1NjAgViAyMjUgSCA4MCBWIDE4NSIvPgogICAgPHBhdGggZD0iTSAxNDAgNzUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjE5MCIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDI2MCA3NSBoIDM1IE0gMjk1IDQzIHYgNjQgTSAzMjUgNDMgdiA2NCBNIDMyNSA3NSBoIDM1Ii8+PHRleHQgeD0iMzEwIiB5PSI0NSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Q+KCgTwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gMzgwIDc1IGggMzUgTSA0MTUgNDMgdiA2NCBNIDQ0NSA0MyB2IDY0IE0gNDQ1IDc1IGggMzUiLz48dGV4dCB4PSI0MzAiIHk9IjQ1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5D4oKCPC90ZXh0Pgo8L3N2Zz4K","parallel-r-lc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UGFyYWxsZWwgUiBMQyBjaXJjdWl0PC90aXRsZT4KICA8ZGVzYyBpZD0iZGVzYyI+T25lIHJlc2lzdG9yIGFuZCB0d28gcmVhY3RpdmUgY29tcG9uZW50cyBjb25uZWN0ZWQgaW4gcGFyYWxsZWwgYWNyb3NzIGFuIEFDIHZvbHRhZ2Ugc291cmNlLjwvZGVzYz4KICA8c3R5bGU+CiAgICBwYXRoLCBjaXJjbGUgeyBmaWxsOiBub25lOyBzdHJva2U6ICMxMTE7IHN0cm9rZS13aWR0aDogNDsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOyBzdHJva2UtbGluZWpvaW46IHJvdW5kOyB9CiAgICB0ZXh0IHsgZmlsbDogIzExMTsgZm9udDogMjJweCBBcmlhbCwgc2Fucy1zZXJpZjsgfQogICAgLm5vZGUgeyBmaWxsOiAjMTExOyBzdHJva2U6IG5vbmU7IH0KICA8L3N0eWxlPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iMTUwIiByPSIzNSIvPjxwYXRoIGQ9Ik0gNjggMTM5IGggMTQgTSA3NSAxMzIgdiAxNCBNIDY4IDE2NCBoIDE0Ii8+PHRleHQgeD0iMTgiIHk9IjE1NSIgdGV4dC1hbmNob3I9InN0YXJ0Ij5W4oKbPC90ZXh0PgogICAgPHBhdGggZD0iTSA4MCAxMTUgViA1NSBIIDU2MCBNIDgwIDE4NSBWIDI0NSBIIDU2MCBNIDI2MCA1NSBWIDkwIE0gMjYwIDIxMCBWIDI0NSBNIDQwMCA1NSBWIDkwIE0gNDAwIDIxMCBWIDI0NSBNIDUyMCA1NSBWIDkwIE0gNTIwIDIxMCBWIDI0NSIvPgogICAgPHBhdGggZD0iTSAyNjAgOTAgdiAxMiBsIC0xNCA4IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0yOCAxNiBsIDI4IDE2IGwgLTE0IDggdiAxMiIvPjx0ZXh0IHg9IjMwMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQwMCA5MCB2IDEwIGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IHYgMTAiLz48dGV4dCB4PSI0NDIiIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5MPC90ZXh0PgogICAgPHBhdGggZD0iTSA1MjAgOTAgdiA0NyBNIDQ4OCAxMzcgaCA2NCBNIDQ4OCAxNjMgaCA2NCBNIDUyMCAxNjMgdiA0NyIvPjx0ZXh0IHg9IjU2MiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPkM8L3RleHQ+Cjwvc3ZnPgo=","parallel-r-ll":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UGFyYWxsZWwgUiBMTCBjaXJjdWl0PC90aXRsZT4KICA8ZGVzYyBpZD0iZGVzYyI+T25lIHJlc2lzdG9yIGFuZCB0d28gcmVhY3RpdmUgY29tcG9uZW50cyBjb25uZWN0ZWQgaW4gcGFyYWxsZWwgYWNyb3NzIGFuIEFDIHZvbHRhZ2Ugc291cmNlLjwvZGVzYz4KICA8c3R5bGU+CiAgICBwYXRoLCBjaXJjbGUgeyBmaWxsOiBub25lOyBzdHJva2U6ICMxMTE7IHN0cm9rZS13aWR0aDogNDsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOyBzdHJva2UtbGluZWpvaW46IHJvdW5kOyB9CiAgICB0ZXh0IHsgZmlsbDogIzExMTsgZm9udDogMjJweCBBcmlhbCwgc2Fucy1zZXJpZjsgfQogICAgLm5vZGUgeyBmaWxsOiAjMTExOyBzdHJva2U6IG5vbmU7IH0KICA8L3N0eWxlPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iMTUwIiByPSIzNSIvPjxwYXRoIGQ9Ik0gNjggMTM5IGggMTQgTSA3NSAxMzIgdiAxNCBNIDY4IDE2NCBoIDE0Ii8+PHRleHQgeD0iMTgiIHk9IjE1NSIgdGV4dC1hbmNob3I9InN0YXJ0Ij5W4oKbPC90ZXh0PgogICAgPHBhdGggZD0iTSA4MCAxMTUgViA1NSBIIDU2MCBNIDgwIDE4NSBWIDI0NSBIIDU2MCBNIDI2MCA1NSBWIDkwIE0gMjYwIDIxMCBWIDI0NSBNIDQwMCA1NSBWIDkwIE0gNDAwIDIxMCBWIDI0NSBNIDUyMCA1NSBWIDkwIE0gNTIwIDIxMCBWIDI0NSIvPgogICAgPHBhdGggZD0iTSAyNjAgOTAgdiAxMiBsIC0xNCA4IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0yOCAxNiBsIDI4IDE2IGwgLTE0IDggdiAxMiIvPjx0ZXh0IHg9IjMwMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQwMCA5MCB2IDEwIGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IHYgMTAiLz48dGV4dCB4PSI0NDIiIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5M4oKBPC90ZXh0PgogICAgPHBhdGggZD0iTSA1MjAgOTAgdiAxMCBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSB2IDEwIi8+PHRleHQgeD0iNTYyIiB5PSIxNTYiIHRleHQtYW5jaG9yPSJzdGFydCI+TOKCgjwvdGV4dD4KPC9zdmc+Cg==","parallel-r-cc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UGFyYWxsZWwgUiBDQyBjaXJjdWl0PC90aXRsZT4KICA8ZGVzYyBpZD0iZGVzYyI+T25lIHJlc2lzdG9yIGFuZCB0d28gcmVhY3RpdmUgY29tcG9uZW50cyBjb25uZWN0ZWQgaW4gcGFyYWxsZWwgYWNyb3NzIGFuIEFDIHZvbHRhZ2Ugc291cmNlLjwvZGVzYz4KICA8c3R5bGU+CiAgICBwYXRoLCBjaXJjbGUgeyBmaWxsOiBub25lOyBzdHJva2U6ICMxMTE7IHN0cm9rZS13aWR0aDogNDsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOyBzdHJva2UtbGluZWpvaW46IHJvdW5kOyB9CiAgICB0ZXh0IHsgZmlsbDogIzExMTsgZm9udDogMjJweCBBcmlhbCwgc2Fucy1zZXJpZjsgfQogICAgLm5vZGUgeyBmaWxsOiAjMTExOyBzdHJva2U6IG5vbmU7IH0KICA8L3N0eWxlPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iMTUwIiByPSIzNSIvPjxwYXRoIGQ9Ik0gNjggMTM5IGggMTQgTSA3NSAxMzIgdiAxNCBNIDY4IDE2NCBoIDE0Ii8+PHRleHQgeD0iMTgiIHk9IjE1NSIgdGV4dC1hbmNob3I9InN0YXJ0Ij5W4oKbPC90ZXh0PgogICAgPHBhdGggZD0iTSA4MCAxMTUgViA1NSBIIDU2MCBNIDgwIDE4NSBWIDI0NSBIIDU2MCBNIDI2MCA1NSBWIDkwIE0gMjYwIDIxMCBWIDI0NSBNIDQwMCA1NSBWIDkwIE0gNDAwIDIxMCBWIDI0NSBNIDUyMCA1NSBWIDkwIE0gNTIwIDIxMCBWIDI0NSIvPgogICAgPHBhdGggZD0iTSAyNjAgOTAgdiAxMiBsIC0xNCA4IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0yOCAxNiBsIDI4IDE2IGwgLTE0IDggdiAxMiIvPjx0ZXh0IHg9IjMwMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQwMCA5MCB2IDQ3IE0gMzY4IDEzNyBoIDY0IE0gMzY4IDE2MyBoIDY0IE0gNDAwIDE2MyB2IDQ3Ii8+PHRleHQgeD0iNDQyIiB5PSIxNTYiIHRleHQtYW5jaG9yPSJzdGFydCI+Q+KCgTwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gNTIwIDkwIHYgNDcgTSA0ODggMTM3IGggNjQgTSA0ODggMTYzIGggNjQgTSA1MjAgMTYzIHYgNDciLz48dGV4dCB4PSI1NjIiIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5D4oKCPC90ZXh0Pgo8L3N2Zz4K","series-r-parallel-lc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBzZXJpZXMgd2l0aCBwYXJhbGxlbCBMQzwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gc2VyaWVzIHdpdGggYSBwYXJhbGxlbCBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNjUgSCAxNjAgTSAyNjAgNjUgSCA1OTAgViAyMzUgSCA4MCBWIDE4NSBNIDM4NSA2NSBWIDkwIE0gMzg1IDIxMCBWIDIzNSBNIDQ5NSA2NSBWIDkwIE0gNDk1IDIxMCBWIDIzNSIvPgogICAgPGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjY1IiByPSI2Ii8+PGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjIzNSIgcj0iNiIvPgogICAgPHBhdGggZD0iTSAxNjAgNjUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjIxMCIgeT0iMzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDM4NSA5MCB2IDEwIGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IHYgMTAiLz48dGV4dCB4PSI0MjciIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5MPC90ZXh0PgogICAgPHBhdGggZD0iTSA0OTUgOTAgdiA0NyBNIDQ2MyAxMzcgaCA2NCBNIDQ2MyAxNjMgaCA2NCBNIDQ5NSAxNjMgdiA0NyIvPjx0ZXh0IHg9IjUzNyIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPkM8L3RleHQ+Cjwvc3ZnPgo=","series-r-parallel-ll":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBzZXJpZXMgd2l0aCBwYXJhbGxlbCBMTDwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gc2VyaWVzIHdpdGggYSBwYXJhbGxlbCBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNjUgSCAxNjAgTSAyNjAgNjUgSCA1OTAgViAyMzUgSCA4MCBWIDE4NSBNIDM4NSA2NSBWIDkwIE0gMzg1IDIxMCBWIDIzNSBNIDQ5NSA2NSBWIDkwIE0gNDk1IDIxMCBWIDIzNSIvPgogICAgPGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjY1IiByPSI2Ii8+PGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjIzNSIgcj0iNiIvPgogICAgPHBhdGggZD0iTSAxNjAgNjUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjIxMCIgeT0iMzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDM4NSA5MCB2IDEwIGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IGMgMTggMCAxOCAyNSAwIDI1IHYgMTAiLz48dGV4dCB4PSI0MjciIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5M4oKBPC90ZXh0PgogICAgPHBhdGggZD0iTSA0OTUgOTAgdiAxMCBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSBjIDE4IDAgMTggMjUgMCAyNSB2IDEwIi8+PHRleHQgeD0iNTM3IiB5PSIxNTYiIHRleHQtYW5jaG9yPSJzdGFydCI+TOKCgjwvdGV4dD4KPC9zdmc+Cg==","series-r-parallel-cc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBzZXJpZXMgd2l0aCBwYXJhbGxlbCBDQzwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gc2VyaWVzIHdpdGggYSBwYXJhbGxlbCBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCB0byBhbiBBQyB2b2x0YWdlIHNvdXJjZS48L2Rlc2M+CiAgPHN0eWxlPgogICAgcGF0aCwgY2lyY2xlIHsgZmlsbDogbm9uZTsgc3Ryb2tlOiAjMTExOyBzdHJva2Utd2lkdGg6IDQ7IHN0cm9rZS1saW5lY2FwOiByb3VuZDsgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsgfQogICAgdGV4dCB7IGZpbGw6ICMxMTE7IGZvbnQ6IDIycHggQXJpYWwsIHNhbnMtc2VyaWY7IH0KICAgIC5ub2RlIHsgZmlsbDogIzExMTsgc3Ryb2tlOiBub25lOyB9CiAgPC9zdHlsZT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE1MCIgcj0iMzUiLz48cGF0aCBkPSJNIDY4IDEzOSBoIDE0IE0gNzUgMTMyIHYgMTQgTSA2OCAxNjQgaCAxNCIvPjx0ZXh0IHg9IjE4IiB5PSIxNTUiIHRleHQtYW5jaG9yPSJzdGFydCI+VuKCmzwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gODAgMTE1IFYgNjUgSCAxNjAgTSAyNjAgNjUgSCA1OTAgViAyMzUgSCA4MCBWIDE4NSBNIDM4NSA2NSBWIDkwIE0gMzg1IDIxMCBWIDIzNSBNIDQ5NSA2NSBWIDkwIE0gNDk1IDIxMCBWIDIzNSIvPgogICAgPGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjY1IiByPSI2Ii8+PGNpcmNsZSBjbGFzcz0ibm9kZSIgY3g9IjMwMCIgY3k9IjIzNSIgcj0iNiIvPgogICAgPHBhdGggZD0iTSAxNjAgNjUgaCAxMCBsIDggLTE0IGwgMTYgMjggbCAxNiAtMjggbCAxNiAyOCBsIDE2IC0yOCBsIDggMTQgaCAxMCIvPjx0ZXh0IHg9IjIxMCIgeT0iMzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDM4NSA5MCB2IDQ3IE0gMzUzIDEzNyBoIDY0IE0gMzUzIDE2MyBoIDY0IE0gMzg1IDE2MyB2IDQ3Ii8+PHRleHQgeD0iNDI3IiB5PSIxNTYiIHRleHQtYW5jaG9yPSJzdGFydCI+Q+KCgTwvdGV4dD4KICAgIDxwYXRoIGQ9Ik0gNDk1IDkwIHYgNDcgTSA0NjMgMTM3IGggNjQgTSA0NjMgMTYzIGggNjQgTSA0OTUgMTYzIHYgNDciLz48dGV4dCB4PSI1MzciIHk9IjE1NiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5D4oKCPC90ZXh0Pgo8L3N2Zz4K","parallel-r-series-lc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBwYXJhbGxlbCB3aXRoIHNlcmllcyBMQzwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gcGFyYWxsZWwgd2l0aCBhIHNlcmllcyBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCBhY3Jvc3MgYW4gQUMgdm9sdGFnZSBzb3VyY2UuPC9kZXNjPgogIDxzdHlsZT4KICAgIHBhdGgsIGNpcmNsZSB7IGZpbGw6IG5vbmU7IHN0cm9rZTogIzExMTsgc3Ryb2tlLXdpZHRoOiA0OyBzdHJva2UtbGluZWNhcDogcm91bmQ7IHN0cm9rZS1saW5lam9pbjogcm91bmQ7IH0KICAgIHRleHQgeyBmaWxsOiAjMTExOyBmb250OiAyMnB4IEFyaWFsLCBzYW5zLXNlcmlmOyB9CiAgICAubm9kZSB7IGZpbGw6ICMxMTE7IHN0cm9rZTogbm9uZTsgfQogIDwvc3R5bGU+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIxNTAiIHI9IjM1Ii8+PHBhdGggZD0iTSA2OCAxMzkgaCAxNCBNIDc1IDEzMiB2IDE0IE0gNjggMTY0IGggMTQiLz48dGV4dCB4PSIxOCIgeT0iMTU1IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlbigps8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDgwIDExNSBWIDU1IEggNTYwIE0gODAgMTg1IFYgMjQ1IEggNTYwIE0gMjgwIDU1IFYgMTAwIE0gMjgwIDIwMCBWIDI0NSBNIDQ4MCA1NSBWIDYwIE0gNDgwIDE0MCBWIDE2MCBNIDQ4MCAyNDAgViAyNDUiLz4KICAgIDxwYXRoIGQ9Ik0gMjgwIDEwMCB2IDIgbCAtMTQgOCBsIDI4IDE2IGwgLTI4IDE2IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0xNCA4IHYgMiIvPjx0ZXh0IHg9IjMyMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQ4MCA2MCB2IDEwIGMgMTggMCAxOCAyMCAwIDIwIGMgMTggMCAxOCAyMCAwIDIwIGMgMTggMCAxOCAyMCAwIDIwIHYgMTAiLz48dGV4dCB4PSI1MjIiIHk9IjEwNiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5MPC90ZXh0PgogICAgPHBhdGggZD0iTSA0ODAgMTYwIHYgMjcgTSA0NDggMTg3IGggNjQgTSA0NDggMjEzIGggNjQgTSA0ODAgMjEzIHYgMjciLz48dGV4dCB4PSI1MjIiIHk9IjIwNiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5DPC90ZXh0Pgo8L3N2Zz4K","parallel-r-series-ll":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBwYXJhbGxlbCB3aXRoIHNlcmllcyBMTDwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gcGFyYWxsZWwgd2l0aCBhIHNlcmllcyBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCBhY3Jvc3MgYW4gQUMgdm9sdGFnZSBzb3VyY2UuPC9kZXNjPgogIDxzdHlsZT4KICAgIHBhdGgsIGNpcmNsZSB7IGZpbGw6IG5vbmU7IHN0cm9rZTogIzExMTsgc3Ryb2tlLXdpZHRoOiA0OyBzdHJva2UtbGluZWNhcDogcm91bmQ7IHN0cm9rZS1saW5lam9pbjogcm91bmQ7IH0KICAgIHRleHQgeyBmaWxsOiAjMTExOyBmb250OiAyMnB4IEFyaWFsLCBzYW5zLXNlcmlmOyB9CiAgICAubm9kZSB7IGZpbGw6ICMxMTE7IHN0cm9rZTogbm9uZTsgfQogIDwvc3R5bGU+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIxNTAiIHI9IjM1Ii8+PHBhdGggZD0iTSA2OCAxMzkgaCAxNCBNIDc1IDEzMiB2IDE0IE0gNjggMTY0IGggMTQiLz48dGV4dCB4PSIxOCIgeT0iMTU1IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlbigps8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDgwIDExNSBWIDU1IEggNTYwIE0gODAgMTg1IFYgMjQ1IEggNTYwIE0gMjgwIDU1IFYgMTAwIE0gMjgwIDIwMCBWIDI0NSBNIDQ4MCA1NSBWIDYwIE0gNDgwIDE0MCBWIDE2MCBNIDQ4MCAyNDAgViAyNDUiLz4KICAgIDxwYXRoIGQ9Ik0gMjgwIDEwMCB2IDIgbCAtMTQgOCBsIDI4IDE2IGwgLTI4IDE2IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0xNCA4IHYgMiIvPjx0ZXh0IHg9IjMyMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQ4MCA2MCB2IDEwIGMgMTggMCAxOCAyMCAwIDIwIGMgMTggMCAxOCAyMCAwIDIwIGMgMTggMCAxOCAyMCAwIDIwIHYgMTAiLz48dGV4dCB4PSI1MjIiIHk9IjEwNiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5M4oKBPC90ZXh0PgogICAgPHBhdGggZD0iTSA0ODAgMTYwIHYgMTAgYyAxOCAwIDE4IDIwIDAgMjAgYyAxOCAwIDE4IDIwIDAgMjAgYyAxOCAwIDE4IDIwIDAgMjAgdiAxMCIvPjx0ZXh0IHg9IjUyMiIgeT0iMjA2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPkzigoI8L3RleHQ+Cjwvc3ZnPgo=","parallel-r-series-cc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UiBpbiBwYXJhbGxlbCB3aXRoIHNlcmllcyBDQzwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgaW4gcGFyYWxsZWwgd2l0aCBhIHNlcmllcyBwYWlyIG9mIHJlYWN0aXZlIGNvbXBvbmVudHMsIGNvbm5lY3RlZCBhY3Jvc3MgYW4gQUMgdm9sdGFnZSBzb3VyY2UuPC9kZXNjPgogIDxzdHlsZT4KICAgIHBhdGgsIGNpcmNsZSB7IGZpbGw6IG5vbmU7IHN0cm9rZTogIzExMTsgc3Ryb2tlLXdpZHRoOiA0OyBzdHJva2UtbGluZWNhcDogcm91bmQ7IHN0cm9rZS1saW5lam9pbjogcm91bmQ7IH0KICAgIHRleHQgeyBmaWxsOiAjMTExOyBmb250OiAyMnB4IEFyaWFsLCBzYW5zLXNlcmlmOyB9CiAgICAubm9kZSB7IGZpbGw6ICMxMTE7IHN0cm9rZTogbm9uZTsgfQogIDwvc3R5bGU+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIxNTAiIHI9IjM1Ii8+PHBhdGggZD0iTSA2OCAxMzkgaCAxNCBNIDc1IDEzMiB2IDE0IE0gNjggMTY0IGggMTQiLz48dGV4dCB4PSIxOCIgeT0iMTU1IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlbigps8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDgwIDExNSBWIDU1IEggNTYwIE0gODAgMTg1IFYgMjQ1IEggNTYwIE0gMjgwIDU1IFYgMTAwIE0gMjgwIDIwMCBWIDI0NSBNIDQ4MCA1NSBWIDYwIE0gNDgwIDE0MCBWIDE2MCBNIDQ4MCAyNDAgViAyNDUiLz4KICAgIDxwYXRoIGQ9Ik0gMjgwIDEwMCB2IDIgbCAtMTQgOCBsIDI4IDE2IGwgLTI4IDE2IGwgMjggMTYgbCAtMjggMTYgbCAyOCAxNiBsIC0xNCA4IHYgMiIvPjx0ZXh0IHg9IjMyMiIgeT0iMTU2IiB0ZXh0LWFuY2hvcj0ic3RhcnQiPlI8L3RleHQ+CiAgICA8cGF0aCBkPSJNIDQ4MCA2MCB2IDI3IE0gNDQ4IDg3IGggNjQgTSA0NDggMTEzIGggNjQgTSA0ODAgMTEzIHYgMjciLz48dGV4dCB4PSI1MjIiIHk9IjEwNiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5D4oKBPC90ZXh0PgogICAgPHBhdGggZD0iTSA0ODAgMTYwIHYgMjcgTSA0NDggMTg3IGggNjQgTSA0NDggMjEzIGggNjQgTSA0ODAgMjEzIHYgMjciLz48dGV4dCB4PSI1MjIiIHk9IjIwNiIgdGV4dC1hbmNob3I9InN0YXJ0Ij5D4oKCPC90ZXh0Pgo8L3N2Zz4K","series-r-parallel-rc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UmVzaXN0b3IgaW4gc2VyaWVzIHdpdGggYSBwYXJhbGxlbCByZXNpc3Rvci1jYXBhY2l0b3IgbmV0d29yazwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkFuIEFDIHNvdXJjZSBhbmQgcmVzaXN0b3IgUjEgaW4gc2VyaWVzIHdpdGggcGFyYWxsZWwgYnJhbmNoZXMgY29udGFpbmluZyByZXNpc3RvciBSMiBhbmQgY2FwYWNpdG9yIEMuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNOTAgNjB2NTdNOTAgMTgzdjU3TTkwIDYwaDcwTTI2MCA2MGgyODBNOTAgMjQwaDQ1ME0zNTAgNjB2MzVNMzUwIDE5MXY0OU00NzUgNjB2NjVNNDc1IDE1NXY4NSIvPjxjaXJjbGUgY3g9IjkwIiBjeT0iMTUwIiByPSIzMyIvPjxwYXRoIGQ9Ik02NyAxNTBjOS0xNyAxNi0xNyAyNCAwczE1IDE3IDI0IDAiLz4KICAgIDxwYXRoIGQ9Ik0xNjAgNjBoMTBsOC0xNiAxNiAzMiAxNi0zMiAxNiAzMiAxNi0zMiA4IDE2aDEwTTM1MCA5NWwtMTMgOCAyNiAxNi0yNiAxNiAyNiAxNi0yNiAxNiAxMyA4djE2TTQ1MyAxMjVoNDRNNDUzIDE1NWg0NCIvPgogICAgPHBhdGggZD0iTTE0NSAyNmgxMjUiIHN0cm9rZT0iIzJmN2QzMiIvPjxwYXRoIGQ9Im0yNTkgMTYgMTUgMTAtMTUgMTAiIHN0cm9rZT0iIzJmN2QzMiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjMTExMTExIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiPgogICAgPHRleHQgeD0iMjEwIiB5PSIxMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Ujx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij4xPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMzgwIiB5PSIxNTEiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Ujx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij4yPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iNTEwIiB5PSIxNDgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+QzwvdGV4dD48dGV4dCB4PSIzNCIgeT0iMTU4IiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+czwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjIwMiIgeT0iMTgiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+STwvdGV4dD4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSI+PGNpcmNsZSBjeD0iMzUwIiBjeT0iNjAiIHI9IjYiLz48Y2lyY2xlIGN4PSIzNTAiIGN5PSIyNDAiIHI9IjYiLz48Y2lyY2xlIGN4PSI0NzUiIGN5PSI2MCIgcj0iNiIvPjxjaXJjbGUgY3g9IjQ3NSIgY3k9IjI0MCIgcj0iNiIvPjwvZz4KPC9zdmc+Cg==","rc-lowpass":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UkMgZmlsdGVyIHdpdGggb3V0cHV0IGFjcm9zcyBjYXBhY2l0b3I8L3RpdGxlPjxkZXNjIGlkPSJkZXNjIj5BIHJlc2lzdG9yIGZyb20gdGhlIGlucHV0IHRvIG91dHB1dCBub2RlIGFuZCBhIGNhcGFjaXRvciBmcm9tIG91dHB1dCB0byBncm91bmQsIHdpdGggb3V0cHV0IG1lYXN1cmVkIGFjcm9zcyB0aGUgY2FwYWNpdG9yLjwvZGVzYz4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzExMTExMSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPHBhdGggZD0iTTgwIDk1aDEwME0xODAgOTVoMTRsMTAtMTggMjAgMzYgMjAtMzYgMjAgMzYgMjAtMzYgMTAgMThoMTRNMzA4IDk1aDE5ME04MCAyMjVoNDE4TTQxMCA5NXYzOE0zNzUgMTMzaDcwTTM3NSAxNjNoNzBNNDEwIDE2M3Y2MiIvPgogICAgPHBhdGggZD0iTTY0IDk1aDMyTTY0IDIyNWgzMk00ODIgOTVoMzJNNDgyIDIyNWgzMiIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjQxMCIgY3k9Ijk1IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDEwIiBjeT0iMjI1IiByPSI2Ii8+PC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIyNDQiIHk9IjE1MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5SPC90ZXh0Pjx0ZXh0IHg9IjQ1MiIgeT0iMTU1IiBmb250LXN0eWxlPSJpdGFsaWMiPkM8L3RleHQ+PHRleHQgeD0iNDAiIHk9IjE2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPmluPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iNTU1IiB5PSIxNjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5vdXQ8L3RzcGFuPjwvdGV4dD48dGV4dCB4PSIzMjAiIHk9IjI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxNyI+b3V0cHV0IG1lYXN1cmVkIGFjcm9zcyBDPC90ZXh0PgogIDwvZz4KPC9zdmc+Cg==","rc-highpass":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+UkMgZmlsdGVyIHdpdGggb3V0cHV0IGFjcm9zcyByZXNpc3RvcjwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkEgY2FwYWNpdG9yIGZyb20gdGhlIGlucHV0IHRvIG91dHB1dCBub2RlIGFuZCBhIHJlc2lzdG9yIGZyb20gb3V0cHV0IHRvIGdyb3VuZCwgd2l0aCBvdXRwdXQgbWVhc3VyZWQgYWNyb3NzIHRoZSByZXNpc3Rvci48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMxMTExMTEiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik04MCA5NWgxMTVNMTk1IDYwdjcwTTIyNSA2MHY3ME0yMjUgOTVoMjczTTgwIDIyNWg0MThNNDEwIDk1djM4TTQxMCAxMzNsLTE4IDEwIDM2IDIwLTM2IDIwIDM2IDIwLTE4IDEwdjIyIi8+CiAgICA8cGF0aCBkPSJNNjQgOTVoMzJNNjQgMjI1aDMyTTQ4MiA5NWgzMk00ODIgMjI1aDMyIiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSI+PGNpcmNsZSBjeD0iNDEwIiBjeT0iOTUiIHI9IjYiLz48Y2lyY2xlIGN4PSI0MTAiIGN5PSIyMjUiIHI9IjYiLz48L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjIxMCIgeT0iNDgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+QzwvdGV4dD48dGV4dCB4PSI0NDciIHk9IjE3MyIgZm9udC1zdHlsZT0iaXRhbGljIj5SPC90ZXh0Pjx0ZXh0IHg9IjQwIiB5PSIxNjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5pbjwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjU1NSIgeT0iMTY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+b3V0PC90c3Bhbj48L3RleHQ+PHRleHQgeD0iMzIwIiB5PSIyNzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTciPm91dHB1dCBtZWFzdXJlZCBhY3Jvc3MgUjwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=","lr-output-r":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+TFIgZmlsdGVyIHdpdGggb3V0cHV0IGFjcm9zcyByZXNpc3RvcjwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkFuIGluZHVjdG9yIGZyb20gdGhlIGlucHV0IHRvIHRoZSBvdXRwdXQgbm9kZSBhbmQgYSByZXNpc3RvciBmcm9tIG91dHB1dCB0byBncm91bmQsIHdpdGggb3V0cHV0IG1lYXN1cmVkIGFjcm9zcyB0aGUgcmVzaXN0b3IuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgOTVoMTAwTTE4MCA5NWgyMGMwLTIwIDIyLTIwIDIyIDBjMC0yMCAyMi0yMCAyMiAwYzAtMjAgMjItMjAgMjIgMGMwLTIwIDIyLTIwIDIyIDBoMjBNMzA4IDk1aDE5ME04MCAyMjVoNDE4TTQxMCA5NXYzOE00MTAgMTMzbC0xOCAxMCAzNiAyMC0zNiAyMCAzNiAyMC0xOCAxMHYyMiIvPgogICAgPHBhdGggZD0iTTY0IDk1aDMyTTY0IDIyNWgzMk00ODIgOTVoMzJNNDgyIDIyNWgzMiIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjQxMCIgY3k9Ijk1IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDEwIiBjeT0iMjI1IiByPSI2Ii8+PC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIyNTQiIHk9IjU4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPkw8L3RleHQ+PHRleHQgeD0iNDQ3IiB5PSIxNzMiIGZvbnQtc3R5bGU9Iml0YWxpYyI+UjwvdGV4dD48dGV4dCB4PSI0MCIgeT0iMTY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+aW48L3RzcGFuPjwvdGV4dD48dGV4dCB4PSI1NTUiIHk9IjE2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPm91dDwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjMyMCIgeT0iMjcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE3Ij5vdXRwdXQgbWVhc3VyZWQgYWNyb3NzIFI8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K","lr-output-l":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+TFIgZmlsdGVyIHdpdGggb3V0cHV0IGFjcm9zcyBpbmR1Y3RvcjwvdGl0bGU+PGRlc2MgaWQ9ImRlc2MiPkEgcmVzaXN0b3IgZnJvbSB0aGUgaW5wdXQgdG8gdGhlIG91dHB1dCBub2RlIGFuZCBhbiBpbmR1Y3RvciBmcm9tIG91dHB1dCB0byBncm91bmQsIHdpdGggb3V0cHV0IG1lYXN1cmVkIGFjcm9zcyB0aGUgaW5kdWN0b3IuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgOTVoMTAwTTE4MCA5NWgxNGwxMC0xOCAyMCAzNiAyMC0zNiAyMCAzNiAyMC0zNiAxMCAxOGgxNE0zMDggOTVoMTkwTTgwIDIyNWg0MThNNDEwIDk1djMwYzIwIDAgMjAgMjAgMCAyMGMyMCAwIDIwIDIwIDAgMjBjMjAgMCAyMCAyMCAwIDIwYzIwIDAgMjAgMjAgMCAyMHYyMCIvPgogICAgPHBhdGggZD0iTTY0IDk1aDMyTTY0IDIyNWgzMk00ODIgOTVoMzJNNDgyIDIyNWgzMiIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjQxMCIgY3k9Ijk1IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDEwIiBjeT0iMjI1IiByPSI2Ii8+PC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIyNDQiIHk9IjE1MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5SPC90ZXh0Pjx0ZXh0IHg9IjQ0NyIgeT0iMTczIiBmb250LXN0eWxlPSJpdGFsaWMiPkw8L3RleHQ+PHRleHQgeD0iNDAiIHk9IjE2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPmluPC90c3Bhbj48L3RleHQ+PHRleHQgeD0iNTU1IiB5PSIxNjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyZjdkMzIiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Vjx0c3BhbiBiYXNlbGluZS1zaGlmdD0ic3ViIiBmb250LXNpemU9IjE1Ij5vdXQ8L3RzcGFuPjwvdGV4dD48dGV4dCB4PSIzMjAiIHk9IjI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxNyI+b3V0cHV0IG1lYXN1cmVkIGFjcm9zcyBMPC90ZXh0PgogIDwvZz4KPC9zdmc+Cg==","rlc-output-r":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJMQyBmaWx0ZXIgd2l0aCBvdXRwdXQgYWNyb3NzIHJlc2lzdG9yPC90aXRsZT48ZGVzYyBpZD0iZGVzYyI+QW4gaW5kdWN0b3IgYW5kIGNhcGFjaXRvciBsZWFkIHRvIGEgcmVzaXN0b3IgY29ubmVjdGVkIHRvIHRoZSByZXR1cm4sIHdpdGggb3V0cHV0IG1lYXN1cmVkIGFjcm9zcyB0aGUgcmVzaXN0b3IuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgOTVoNjBNMTQwIDk1aDEwYzAtMTggMjAtMTggMjAgMGMwLTE4IDIwLTE4IDIwIDBjMC0xOCAyMC0xOCAyMCAwYzAtMTggMjAtMTggMjAgMGgxME0yNDAgOTVoMzBNMjcwIDYydjY2TTMwMCA2MnY2Nk0zMDAgOTVoMTk4TTgwIDIyNWg0MThNNDEwIDk1djM4TTQxMCAxMzNsLTE4IDEwIDM2IDIwLTM2IDIwIDM2IDIwLTE4IDEwdjIyIi8+CiAgICA8cGF0aCBkPSJNNjQgOTVoMzJNNjQgMjI1aDMyTTQ4MiA5NWgzMk00ODIgMjI1aDMyIiBzdHJva2U9IiMyZjdkMzIiLz4KICA8L2c+CiAgPGcgZmlsbD0iIzExMTExMSI+PGNpcmNsZSBjeD0iNDEwIiBjeT0iOTUiIHI9IjYiLz48Y2lyY2xlIGN4PSI0MTAiIGN5PSIyMjUiIHI9IjYiLz48L2c+CiAgPGcgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIj4KICAgIDx0ZXh0IHg9IjE5MCIgeT0iNTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TDwvdGV4dD48dGV4dCB4PSIyODUiIHk9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPkM8L3RleHQ+PHRleHQgeD0iNDQ3IiB5PSIxNzMiIGZvbnQtc3R5bGU9Iml0YWxpYyI+UjwvdGV4dD48dGV4dCB4PSI0MCIgeT0iMTY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+aW48L3RzcGFuPjwvdGV4dD48dGV4dCB4PSI1NTUiIHk9IjE2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPm91dDwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjMyMCIgeT0iMjcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE3Ij5vdXRwdXQgbWVhc3VyZWQgYWNyb3NzIFI8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K","rlc-output-lc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2VyaWVzIFJMQyBmaWx0ZXIgd2l0aCBvdXRwdXQgYWNyb3NzIGluZHVjdG9yIGFuZCBjYXBhY2l0b3I8L3RpdGxlPjxkZXNjIGlkPSJkZXNjIj5BIHJlc2lzdG9yIGxlYWRzIHRvIGEgc2VyaWVzIGluZHVjdG9yIGFuZCBjYXBhY2l0b3IgY29ubmVjdGVkIHRvIHRoZSByZXR1cm4sIHdpdGggb3V0cHV0IG1lYXN1cmVkIGFjcm9zcyB0aGUgaW5kdWN0b3ItY2FwYWNpdG9yIHBhaXIuPC9kZXNjPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTExIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNODAgOTVoMTAwTTE4MCA5NWgxNGwxMC0xOCAyMCAzNiAyMC0zNiAyMCAzNiAyMC0zNiAxMCAxOGgxNE0zMDggOTVoMTkwTTgwIDI0NWg0MThNNDEwIDk1djIwYzIwIDAgMjAgMTggMCAxOGMyMCAwIDIwIDE4IDAgMThjMjAgMCAyMCAxOCAwIDE4YzIwIDAgMjAgMTggMCAxOHYxM00zNzUgMjAwaDcwTTM3NSAyMjVoNzBNNDEwIDIyNXYyMCIvPgogICAgPHBhdGggZD0iTTY0IDk1aDMyTTY0IDI0NWgzMk00ODIgOTVoMzJNNDgyIDI0NWgzMiIgc3Ryb2tlPSIjMmY3ZDMyIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxMTExMTEiPjxjaXJjbGUgY3g9IjQxMCIgY3k9Ijk1IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDEwIiBjeT0iMjQ1IiByPSI2Ii8+PC9nPgogIDxnIGZpbGw9IiMxMTExMTEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiI+CiAgICA8dGV4dCB4PSIyNDQiIHk9IjE1MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zdHlsZT0iaXRhbGljIj5SPC90ZXh0Pjx0ZXh0IHg9IjQ0NyIgeT0iMTUyIiBmb250LXN0eWxlPSJpdGFsaWMiPkw8L3RleHQ+PHRleHQgeD0iNDU1IiB5PSIyMjAiIGZvbnQtc3R5bGU9Iml0YWxpYyI+QzwvdGV4dD48dGV4dCB4PSI0MCIgeT0iMTc2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmY3ZDMyIiBmb250LXN0eWxlPSJpdGFsaWMiPlY8dHNwYW4gYmFzZWxpbmUtc2hpZnQ9InN1YiIgZm9udC1zaXplPSIxNSI+aW48L3RzcGFuPjwvdGV4dD48dGV4dCB4PSI1NTUiIHk9IjE3NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJmN2QzMiIgZm9udC1zdHlsZT0iaXRhbGljIj5WPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iMTUiPm91dDwvdHNwYW4+PC90ZXh0Pjx0ZXh0IHg9IjMyMCIgeT0iMjgyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE3Ij5vdXRwdXQgbWVhc3VyZWQgYWNyb3NzIHNlcmllcyBMIGFuZCBDPC90ZXh0PgogIDwvZz4KPC9zdmc+Cg=="};
+"use strict";
+
+const TWO_PI = 2 * Math.PI;
+const values = {
+  frequency: [100, 200, 500, 1000, 2000, 5000, 10000],
+  voltage: [1, 2, 5, 10, 12],
+  resistance: [100, 150, 220, 330, 470, 680, 1000, 1500, 2200, 3300, 4700, 6800, 10000],
+  capacitance: [10e-9, 22e-9, 47e-9, 100e-9, 220e-9, 470e-9, 1e-6, 2.2e-6, 4.7e-6, 10e-6],
+  inductance: [1e-3, 2.2e-3, 4.7e-3, 10e-3, 22e-3, 47e-3, 100e-3, 220e-3, 470e-3, 1]
+};
+
+const circuitNames = [
+  "series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl",
+  "loaded-rc-divider", "loaded-rl-divider",
+  "series-r-lc", "series-r-ll", "series-r-cc",
+  "parallel-r-lc", "parallel-r-ll", "parallel-r-cc",
+  "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc",
+  "parallel-r-series-lc", "parallel-r-series-ll", "parallel-r-series-cc",
+  "series-r-parallel-rc", "rc-lowpass", "rc-highpass", "lr-output-r", "lr-output-l", "rlc-output-r", "rlc-output-lc"
+];
+const embeddedAssets = typeof window !== "undefined" ? window.CIRCUIT_ASSETS : null;
+const CIRCUIT_ASSETS = embeddedAssets || Object.fromEntries(circuitNames.map((name) => [name, `assets/${name}.svg`]));
+
+const state = { count: 0, set: "mixed", problem: null, lastType: null };
+const $ = (selector) => document.querySelector(selector);
+const pick = (array) => array[Math.floor(Math.random() * array.length)];
+const BALANCE_MIN = .2;
+const BALANCE_MAX = 5;
+const TARGET_ANGLES = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75];
+const PHASOR_ANGLES = [-75, -65, -55, -45, -35, -25, -15, 15, 25, 35, 45, 55, 65, 75];
+const PHASOR_MAGNITUDES = [5, 10, 12, 15, 20, 25, 30, 40, 50];
+const S = Object.freeze({
+  ZC: "Z<sub>C</sub>", ZC1: "Z<sub>C1</sub>", ZC2: "Z<sub>C2</sub>",
+  ZL: "Z<sub>L</sub>", ZL1: "Z<sub>L1</sub>", ZL2: "Z<sub>L2</sub>",
+  Za: "Z<sub>a</sub>", Zp: "Z<sub>p</sub>", Zb: "Z<sub>b</sub>",
+  VC: "V<sub>C</sub>", VL: "V<sub>L</sub>", Vs: "V<sub>s</sub>", Vin: "V<sub>in</sub>", Vout: "V<sub>out</sub>", Vp: "V<sub>p</sub>", VR: "V<sub>R</sub>",
+  Is: "I<sub>s</sub>", IR: "I<sub>R</sub>", IC: "I<sub>C</sub>",
+  R1: "R<sub>1</sub>", R2: "R<sub>2</sub>", Rp: "R<sub>p</sub>",
+  L1: "L<sub>1</sub>", L2: "L<sub>2</sub>", C1: "C<sub>1</sub>", C2: "C<sub>2</sub>",
+  PR: "P<sub>R</sub>", PR1: "P<sub>R1</sub>", PR2: "P<sub>R2</sub>",
+  fc: "f<sub>c</sub>", f0: "f<sub>0</sub>"
+});
+
+function pickDifferent(array, previous) {
+  const choices = array.filter((item) => item !== previous);
+  return pick(choices.length ? choices : array);
+}
+
+function isBalanced(ratio) { return ratio >= BALANCE_MIN && ratio <= BALANCE_MAX; }
+
+function balancedRC() {
+  const candidates = [];
+  for (const f of values.frequency) {
+    for (const R of values.resistance) {
+      for (const C of values.capacitance) {
+        const Xc = 1 / (TWO_PI * f * C);
+        if (isBalanced(Xc / R)) candidates.push({ f, R, C, Xc });
+      }
+    }
+  }
+  return pick(candidates);
+}
+
+function balancedRL() {
+  const candidates = [];
+  for (const f of values.frequency) {
+    for (const R of values.resistance) {
+      for (const L of values.inductance) {
+        const Xl = TWO_PI * f * L;
+        if (isBalanced(Xl / R)) candidates.push({ f, R, L, Xl });
+      }
+    }
+  }
+  return pick(candidates);
+}
+
+function balancedRLC() {
+  const candidates = [];
+  for (const f of values.frequency) {
+    for (const R of values.resistance) {
+      for (const L of values.inductance) {
+        const Xl = TWO_PI * f * L;
+        for (const C of values.capacitance) {
+          const Xc = 1 / (TWO_PI * f * C);
+          if (isBalanced(Math.abs(Xl - Xc) / R)) candidates.push({ f, R, L, C, Xl, Xc });
+        }
+      }
+    }
+  }
+  return pick(candidates);
+}
+
+function balancedSeriesRLCVoltages() {
+  const candidates = [];
+  for (const f of values.frequency) {
+    for (const R of values.resistance) {
+      for (const L of values.inductance) {
+        const Xl = TWO_PI * f * L;
+        if (!isBalanced(Xl / R)) continue;
+        for (const C of values.capacitance) {
+          const Xc = 1 / (TWO_PI * f * C);
+          if (isBalanced(Xc / R) && isBalanced(Math.abs(Xl - Xc) / R)) candidates.push({ f, R, L, C, Xl, Xc });
+        }
+      }
+    }
+  }
+  return pick(candidates);
+}
+
+function balancedResonantRLC() {
+  const candidates = [];
+  for (const R of values.resistance) {
+    for (const L of values.inductance) {
+      for (const C of values.capacitance) {
+        const X0 = Math.sqrt(L / C);
+        if (isBalanced(X0 / R)) candidates.push({ R, L, C, X0, f0: 1 / (TWO_PI * Math.sqrt(L * C)) });
+      }
+    }
+  }
+  return pick(candidates);
+}
+
+function sig(value, digits = 3) {
+  if (Math.abs(value) < 1e-12) return "0";
+  return Number(value.toPrecision(digits)).toString();
+}
+
+function engineering(value, unit) {
+  const abs = Math.abs(value);
+  if (abs < 1e-12) return `0 ${unit}`;
+  const scales = [
+    { n: 1e6, p: "M" }, { n: 1e3, p: "k" }, { n: 1, p: "" },
+    { n: 1e-3, p: "m" }, { n: 1e-6, p: "µ" }, { n: 1e-9, p: "n" }
+  ];
+  const scale = scales.find((item) => abs >= item.n * .999) || scales.at(-1);
+  return `${sig(value / scale.n)} ${scale.p}${unit}`;
+}
+
+function degrees(radians) { return radians * 180 / Math.PI; }
+
+function polar(complex) {
+  return { magnitude: Math.hypot(complex.re, complex.im), angle: degrees(Math.atan2(complex.im, complex.re)) };
+}
+
+function add(a, b) { return { re: a.re + b.re, im: a.im + b.im }; }
+
+function divide(a, b) {
+  const denominator = b.re * b.re + b.im * b.im;
+  return { re: (a.re * b.re + a.im * b.im) / denominator, im: (a.im * b.re - a.re * b.im) / denominator };
+}
+
+function multiply(a, b) {
+  return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re };
+}
+
+function parallelZ(a, b) { return divide(multiply(a, b), add(a, b)); }
+
+function balancedComplex(factory) {
+  for (let attempt = 0; attempt < 2000; attempt += 1) {
+    const candidate = factory();
+    const angle = Math.abs(polar(candidate.z).angle);
+    if (candidate.valid !== false && [candidate.z.re, candidate.z.im, angle].every(Number.isFinite) && angle >= 10 && angle <= 80) return candidate;
+  }
+  throw new Error("Could not generate a balanced multi-component circuit.");
+}
+
+function validCandidate(factory, message) {
+  for (let attempt = 0; attempt < 5000; attempt += 1) {
+    const candidate = factory();
+    if (candidate) return candidate;
+  }
+  throw new Error(message);
+}
+
+function complexLines(symbol, complex, unit) {
+  const p = polar(complex);
+  const sign = complex.im < 0 ? "−" : "+";
+  return `<div>${symbol} = ${engineering(complex.re, unit)} ${sign} j${engineering(Math.abs(complex.im), unit)}</div>
+    <div>${symbol} = ${engineering(p.magnitude, unit)} ∠ ${sig(p.angle)}°</div>`;
+}
+
+function rectangular(complex, unit) {
+  const sign = complex.im < 0 ? "−" : "+";
+  return `${engineering(complex.re, unit)} ${sign} j${engineering(Math.abs(complex.im), unit)}`;
+}
+
+function polarLine(symbol, complex, unit) {
+  const p = polar(complex);
+  return `<div>${symbol} = ${engineering(p.magnitude, unit)} ∠ ${sig(p.angle)}°</div>`;
+}
+
+function fromPolar(magnitude, angle) {
+  const radians = angle * Math.PI / 180;
+  return { re: magnitude * Math.cos(radians), im: magnitude * Math.sin(radians) };
+}
+
+function phasorText(magnitude, angle, unit = "") {
+  return `${sig(magnitude)} ∠ ${sig(angle)}°${unit ? ` ${unit}` : ""}`;
+}
+
+function signedAngle(angle) {
+  return angle < 0 ? `− ${sig(Math.abs(angle))}°` : `+ ${sig(angle)}°`;
+}
+
+function complexText(complex) {
+  const sign = complex.im < 0 ? "−" : "+";
+  return `${sig(complex.re)} ${sign} j${sig(Math.abs(complex.im))}`;
+}
+
+function decibels(ratioMagnitude) { return 20 * Math.log10(ratioMagnitude); }
+
+function rcFilterRatio(R, C, f, outputAcrossC) {
+  const zc = { re: 0, im: -1 / (TWO_PI * f * C) };
+  return divide(outputAcrossC ? zc : { re: R, im: 0 }, add({ re: R, im: 0 }, zc));
+}
+
+function lrFilterRatio(R, L, f, outputAcrossR) {
+  const zl = { re: 0, im: TWO_PI * f * L };
+  return divide(outputAcrossR ? { re: R, im: 0 } : zl, add({ re: R, im: 0 }, zl));
+}
+
+function circuitImage(name, alt) {
+  return `<img src="${CIRCUIT_ASSETS[name]}" alt="${alt}" width="640" height="300">`;
+}
+
+function problem(config) { return config; }
+
+function seriesRCImpedance() {
+  const { f, R, C, Xc } = balancedRC(), z = { re: R, im: -Xc }, p = polar(z);
+  return problem({ type: "seriesRCImpedance", group: "impedance", tag: "Equivalent impedance", image: "series-rc", imageAlt: "Series resistor-capacitor circuit",
+    prompt: "Find the equivalent impedance seen by the source.", detail: "Express Z in rectangular and polar form.",
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")]], answer: complexLines("Z", z, "Ω"),
+    steps: [`${S.ZC} = 1/(j2πfC) = −j${engineering(Xc, "Ω")}`, `Z = R + ${S.ZC} = ${engineering(R, "Ω")} − j${engineering(Xc, "Ω")}`, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`], result: z });
+}
+
+function seriesRLImpedance() {
+  const { f, R, L, Xl } = balancedRL(), z = { re: R, im: Xl }, p = polar(z);
+  return problem({ type: "seriesRLImpedance", group: "impedance", tag: "Equivalent impedance", image: "series-rl", imageAlt: "Series resistor-inductor circuit",
+    prompt: "Find the equivalent impedance seen by the source.", detail: "Express Z in rectangular and polar form.",
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")]], answer: complexLines("Z", z, "Ω"),
+    steps: [`${S.ZL} = j2πfL = j${engineering(Xl, "Ω")}`, `Z = R + ${S.ZL} = ${engineering(R, "Ω")} + j${engineering(Xl, "Ω")}`, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`], result: z });
+}
+
+function seriesRLCImpedance() {
+  const { f, R, L, C, Xl, Xc } = balancedRLC(), z = { re: R, im: Xl - Xc }, p = polar(z);
+  const sign = z.im < 0 ? "−" : "+";
+  return problem({ type: "seriesRLCImpedance", group: "impedance", tag: "Equivalent impedance", image: "series-rlc", imageAlt: "Series resistor-inductor-capacitor circuit",
+    prompt: "Find the equivalent impedance seen by the source.", detail: "Decide whether the circuit is net inductive or capacitive.",
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")], ["C", engineering(C, "F")]], answer: complexLines("Z", z, "Ω"),
+    steps: [`${S.ZL} = j${engineering(Xl, "Ω")}`, `${S.ZC} = −j${engineering(Xc, "Ω")}`, `Z = R + ${S.ZL} + ${S.ZC} = ${engineering(R, "Ω")} ${sign} j${engineering(Math.abs(z.im), "Ω")}`, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`], result: z });
+}
+
+function parallelRCImpedance() {
+  const { f, R, C, Xc } = balancedRC(), zc = { re: 0, im: -Xc };
+  const z = divide(multiply({ re: R, im: 0 }, zc), { re: R, im: -Xc }), p = polar(z);
+  return problem({ type: "parallelRCImpedance", group: "impedance", tag: "Equivalent impedance", image: "parallel-rc", imageAlt: "Parallel resistor-capacitor circuit",
+    prompt: "Find the equivalent impedance of the parallel network.", detail: `Use the parallel-impedance formula with R and ${S.ZC}.`,
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")]], answer: complexLines("Z", z, "Ω"),
+    steps: [`${S.ZC} = 1/(j2πfC) = −j${engineering(Xc, "Ω")}`, `Z = (R ${S.ZC})/(R + ${S.ZC})`, `Z = ${engineering(z.re, "Ω")} − j${engineering(Math.abs(z.im), "Ω")}`, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`], result: z });
+}
+
+function parallelRLImpedance() {
+  const { f, R, L, Xl } = balancedRL(), zl = { re: 0, im: Xl };
+  const z = divide(multiply({ re: R, im: 0 }, zl), { re: R, im: Xl }), p = polar(z);
+  return problem({ type: "parallelRLImpedance", group: "impedance", tag: "Equivalent impedance", image: "parallel-rl", imageAlt: "Parallel resistor-inductor circuit",
+    prompt: "Find the equivalent impedance of the parallel network.", detail: `Use the parallel-impedance formula with R and ${S.ZL}.`,
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")]], answer: complexLines("Z", z, "Ω"),
+    steps: [`${S.ZL} = j2πfL = j${engineering(Xl, "Ω")}`, `Z = (R ${S.ZL})/(R + ${S.ZL})`, `Z = ${engineering(z.re, "Ω")} + j${engineering(z.im, "Ω")}`, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`], result: z });
+}
+
+function reactivePair(f) {
+  const suffix = pick(["lc", "ll", "cc"]);
+  if (suffix === "lc") {
+    const L = pick(values.inductance), C = pick(values.capacitance);
+    const Xl = TWO_PI * f * L, Xc = 1 / (TWO_PI * f * C);
+    return {
+      suffix, names: "L and C", symbols: [S.ZL, S.ZC],
+      impedances: [{ re: 0, im: Xl }, { re: 0, im: -Xc }],
+      given: [["L", engineering(L, "H")], ["C", engineering(C, "F")]],
+      steps: [`${S.ZL} = j${engineering(Xl, "Ω")}`, `${S.ZC} = −j${engineering(Xc, "Ω")}`]
+    };
+  }
+  if (suffix === "ll") {
+    const L1 = pick(values.inductance), L2 = pick(values.inductance);
+    const Xl1 = TWO_PI * f * L1, Xl2 = TWO_PI * f * L2;
+    return {
+      suffix, names: "L₁ and L₂", symbols: [S.ZL1, S.ZL2],
+      impedances: [{ re: 0, im: Xl1 }, { re: 0, im: Xl2 }],
+      given: [[S.L1, engineering(L1, "H")], [S.L2, engineering(L2, "H")]],
+      steps: [`${S.ZL1} = j${engineering(Xl1, "Ω")}`, `${S.ZL2} = j${engineering(Xl2, "Ω")}`]
+    };
+  }
+  const C1 = pick(values.capacitance), C2 = pick(values.capacitance);
+  const Xc1 = 1 / (TWO_PI * f * C1), Xc2 = 1 / (TWO_PI * f * C2);
+  return {
+    suffix, names: "C₁ and C₂", symbols: [S.ZC1, S.ZC2],
+    impedances: [{ re: 0, im: -Xc1 }, { re: 0, im: -Xc2 }],
+    given: [[S.C1, engineering(C1, "F")], [S.C2, engineering(C2, "F")]],
+    steps: [`${S.ZC1} = −j${engineering(Xc1, "Ω")}`, `${S.ZC2} = −j${engineering(Xc2, "Ω")}`]
+  };
+}
+
+function multiComponentImpedance(topology, type) {
+  const selected = balancedComplex(() => {
+    const f = pick(values.frequency), R = pick(values.resistance), pair = reactivePair(f);
+    const [z1, z2] = pair.impedances, resistor = { re: R, im: 0 };
+    let branch = null, first = null, z;
+    if (topology === "series") z = add(resistor, add(z1, z2));
+    if (topology === "parallel") {
+      first = parallelZ(resistor, z1);
+      z = parallelZ(first, z2);
+    }
+    if (topology === "series-parallel") {
+      branch = parallelZ(z1, z2);
+      z = add(resistor, branch);
+    }
+    if (topology === "parallel-series") {
+      branch = add(z1, z2);
+      z = parallelZ(resistor, branch);
+    }
+    const reactancesStayClose = pair.impedances.every((component) => isBalanced(Math.abs(component.im) / R));
+    return { f, R, pair, branch, first, z, valid: reactancesStayClose };
+  });
+
+  const { f, R, pair, branch, first, z } = selected;
+  const [z1Symbol, z2Symbol] = pair.symbols, p = polar(z);
+  let image, imageAlt, detail, combinationSteps;
+  if (topology === "series") {
+    image = `series-r-${pair.suffix}`;
+    imageAlt = `One resistor, ${pair.names}, all connected in series`;
+    detail = "Combine all three series impedances, then convert the result to polar form.";
+    combinationSteps = [`Z = R + ${z1Symbol} + ${z2Symbol}`, `Z = ${rectangular(z, "Ω")}`];
+  } else if (topology === "parallel") {
+    image = `parallel-r-${pair.suffix}`;
+    imageAlt = `One resistor, ${pair.names}, all connected in parallel`;
+    detail = "Combine the three branches two at a time using the parallel-impedance formula.";
+    combinationSteps = [
+      `${S.Za} = (R${z1Symbol})/(R + ${z1Symbol}) = ${rectangular(first, "Ω")}`,
+      `Z = (${S.Za}${z2Symbol})/(${S.Za} + ${z2Symbol}) = ${rectangular(z, "Ω")}`
+    ];
+  } else if (topology === "series-parallel") {
+    image = `series-r-parallel-${pair.suffix}`;
+    imageAlt = `One resistor in series with ${pair.names} connected in parallel`;
+    detail = "Combine the two reactive branches in parallel, then add the resistor in series.";
+    combinationSteps = [
+      `${S.Zp} = (${z1Symbol}${z2Symbol})/(${z1Symbol} + ${z2Symbol}) = ${rectangular(branch, "Ω")}`,
+      `Z = R + ${S.Zp} = ${rectangular(z, "Ω")}`
+    ];
+  } else {
+    image = `parallel-r-series-${pair.suffix}`;
+    imageAlt = `One resistor in parallel with a series branch containing ${pair.names}`;
+    detail = "Combine the two reactive impedances in series, then combine that branch with the resistor in parallel.";
+    combinationSteps = [
+      `${S.Zb} = ${z1Symbol} + ${z2Symbol} = ${rectangular(branch, "Ω")}`,
+      `Z = (R${S.Zb})/(R + ${S.Zb}) = ${rectangular(z, "Ω")}`
+    ];
+  }
+
+  return problem({
+    type, group: "advanced", tag: "Multi-component impedance", image, imageAlt,
+    prompt: "Find the equivalent impedance seen by the source.", detail,
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ...pair.given],
+    answer: complexLines("Z", z, "Ω"),
+    steps: [...pair.steps, ...combinationSteps, `|Z| = ${engineering(p.magnitude, "Ω")},   θ = ${sig(p.angle)}°`],
+    result: z, reactivePair: pair.suffix, resistorCount: 1,
+    reactanceRatios: pair.impedances.map((component) => Math.abs(component.im) / R)
+  });
+}
+
+function seriesThreeImpedance() { return multiComponentImpedance("series", "seriesThreeImpedance"); }
+function parallelThreeImpedance() { return multiComponentImpedance("parallel", "parallelThreeImpedance"); }
+function seriesParallelImpedance() { return multiComponentImpedance("series-parallel", "seriesParallelImpedance"); }
+function parallelSeriesImpedance() { return multiComponentImpedance("parallel-series", "parallelSeriesImpedance"); }
+
+function seriesCurrent() {
+  const useRC = Math.random() < .5;
+  const Vs = pick(values.voltage);
+  let f, R, z, reactiveGiven, reactanceStep, image, imageAlt;
+  if (useRC) {
+    const selected = balancedRC(), C = selected.C, Xc = selected.Xc;
+    f = selected.f; R = selected.R;
+    z = { re: R, im: -Xc }; reactiveGiven = ["C", engineering(C, "F")]; reactanceStep = `${S.ZC} = −j${engineering(Xc, "Ω")}`; image = "series-rc"; imageAlt = "Series RC circuit with source current";
+  } else {
+    const selected = balancedRL(), L = selected.L, Xl = selected.Xl;
+    f = selected.f; R = selected.R;
+    z = { re: R, im: Xl }; reactiveGiven = ["L", engineering(L, "H")]; reactanceStep = `${S.ZL} = j${engineering(Xl, "Ω")}`; image = "series-rl"; imageAlt = "Series RL circuit with source current";
+  }
+  const current = divide({ re: Vs, im: 0 }, z), pz = polar(z), pi = polar(current);
+  return problem({ type: "seriesCurrent", group: "phasors", tag: "Current phasor", image, imageAlt,
+    prompt: "Find the source current phasor I.", detail: "The source voltage is the 0° phase reference. Use RMS values.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], reactiveGiven], answer: complexLines("I", current, "A"),
+    steps: [reactanceStep, `Z = ${engineering(pz.magnitude, "Ω")} ∠ ${sig(pz.angle)}°`, `I = ${S.Vs}/Z`, `|I| = ${engineering(pi.magnitude, "A")},   ∠I = 0° − (${sig(pz.angle)}°) = ${sig(pi.angle)}°`], result: current });
+}
+
+function capacitorVoltage() {
+  const { f, R, C, Xc } = balancedRC(), Vs = pick(values.voltage), z = { re: R, im: -Xc }, zc = { re: 0, im: -Xc };
+  const current = divide({ re: Vs, im: 0 }, z), vc = multiply(current, zc), pi = polar(current), pvc = polar(vc);
+  return problem({ type: "capacitorVoltage", group: "phasors", tag: "Voltage phasor", image: "series-rc-vc", imageAlt: "Series RC circuit with capacitor voltage marked",
+    prompt: `Find the capacitor voltage phasor ${S.VC}.`, detail: "Use the marked polarity and take the source as the 0° reference.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")]], answer: complexLines(S.VC, vc, "V"),
+    steps: [`${S.ZC} = −j${engineering(Xc, "Ω")}`, `I = ${S.Vs}/(R + ${S.ZC}) = ${engineering(pi.magnitude, "A")} ∠ ${sig(pi.angle)}°`, `${S.VC} = I ${S.ZC}`, `|${S.VC}| = ${engineering(pvc.magnitude, "V")},   ∠${S.VC} = ${sig(pvc.angle)}°`], result: vc });
+}
+
+function seriesComponentVoltages() {
+  const { f, R, L, C, Xl, Xc } = balancedSeriesRLCVoltages(), Vs = pick(values.voltage);
+  const z = { re: R, im: Xl - Xc }, pz = polar(z);
+  const current = divide({ re: Vs, im: 0 }, z);
+  const vr = multiply(current, { re: R, im: 0 });
+  const vl = multiply(current, { re: 0, im: Xl });
+  const vc = multiply(current, { re: 0, im: -Xc });
+  const voltageSum = add(add(vr, vl), vc);
+  return problem({
+    type: "seriesComponentVoltages", group: "phasors", tag: "Component voltage phasors",
+    image: "series-rlc-voltages", imageAlt: "Series RLC circuit with the voltage polarity marked across each component",
+    prompt: `Find I, ${S.VR}, ${S.VL}, and ${S.VC}.`,
+    detail: "Use the marked polarities, RMS phasors, and the source voltage as the 0° reference.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")], ["C", engineering(C, "F")]],
+    answer: `${polarLine("I", current, "A")}${polarLine(S.VR, vr, "V")}${polarLine(S.VL, vl, "V")}${polarLine(S.VC, vc, "V")}`,
+    steps: [
+      `${S.ZL} = j${engineering(Xl, "Ω")},   ${S.ZC} = −j${engineering(Xc, "Ω")}`,
+      `Z = R + ${S.ZL} + ${S.ZC} = ${rectangular(z, "Ω")} = ${engineering(pz.magnitude, "Ω")} ∠ ${sig(pz.angle)}°`,
+      `I = ${S.Vs}/Z = ${engineering(polar(current).magnitude, "A")} ∠ ${sig(polar(current).angle)}°`,
+      `${S.VR} = IR = ${engineering(polar(vr).magnitude, "V")} ∠ ${sig(polar(vr).angle)}°`,
+      `${S.VL} = I${S.ZL} = ${engineering(polar(vl).magnitude, "V")} ∠ ${sig(polar(vl).angle)}°`,
+      `${S.VC} = I${S.ZC} = ${engineering(polar(vc).magnitude, "V")} ∠ ${sig(polar(vc).angle)}°`,
+      `Check: ${S.VR} + ${S.VL} + ${S.VC} = ${S.Vs}`
+    ],
+    result: current, voltageCheck: { sum: voltageSum, source: { re: Vs, im: 0 } },
+    reactanceRatios: [Xl / R, Xc / R]
+  });
+}
+
+function unknownComponent() {
+  const useRC = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const f = pick(values.frequency), R = pick(values.resistance), angleMagnitude = pick(TARGET_ANGLES);
+    const reactance = R * Math.tan(angleMagnitude * Math.PI / 180);
+    if (useRC) {
+      const component = 1 / (TWO_PI * f * reactance);
+      if (component < values.capacitance[0] || component > values.capacitance.at(-1)) return null;
+      return { f, R, angle: -angleMagnitude, reactance, component };
+    }
+    const component = reactance / (TWO_PI * f);
+    if (component < values.inductance[0] || component > values.inductance.at(-1)) return null;
+    return { f, R, angle: angleMagnitude, reactance, component };
+  }, "Could not generate an unknown-component problem.");
+  const { f, R, angle, reactance, component } = selected;
+  const symbol = useRC ? "C" : "L", unit = useRC ? "F" : "H";
+  const impedanceSymbol = useRC ? S.ZC : S.ZL;
+  const image = useRC ? "series-rc" : "series-rl";
+  const sign = useRC ? "−" : "+";
+  const formulaStep = useRC
+    ? `C = 1/(2πf${useRC ? "X<sub>C</sub>" : ""}) = ${engineering(component, unit)}`
+    : `L = X<sub>L</sub>/(2πf) = ${engineering(component, unit)}`;
+  return problem({
+    type: "unknownComponent", group: "unknown", tag: "Unknown component",
+    image, imageAlt: `Series ${useRC ? "RC" : "RL"} circuit with an unknown ${useRC ? "capacitor" : "inductor"}`,
+    prompt: `Find the value of ${symbol} that gives the specified impedance angle.`,
+    detail: `Use the angle of Z = R ${sign} jX and the series-circuit impedance relationship.`,
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["∠Z", `${angle}°`]],
+    answer: `<div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [
+      `|∠Z| = tan⁻¹(X/R), so X = R tan(|∠Z|).`,
+      `|${impedanceSymbol}| = ${engineering(reactance, "Ω")}`,
+      formulaStep,
+      `Check: Z = ${engineering(R, "Ω")} ${sign} j${engineering(reactance, "Ω")} has ∠Z = ${angle}°.`
+    ],
+    result: { re: component, im: 0 }, targetAngle: angle, circuitFamily: useRC ? "RC" : "RL",
+    verificationAngle: degrees(Math.atan2(useRC ? -reactance : reactance, R))
+  });
+}
+
+function unknownFrequency() {
+  const useRC = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), angleMagnitude = pick(TARGET_ANGLES);
+    const reactance = R * Math.tan(angleMagnitude * Math.PI / 180);
+    if (useRC) {
+      const C = pick(values.capacitance), f = 1 / (TWO_PI * C * reactance);
+      if (f < values.frequency[0] || f > values.frequency.at(-1)) return null;
+      return { R, C, f, angle: -angleMagnitude, reactance };
+    }
+    const L = pick(values.inductance), f = reactance / (TWO_PI * L);
+    if (f < values.frequency[0] || f > values.frequency.at(-1)) return null;
+    return { R, L, f, angle: angleMagnitude, reactance };
+  }, "Could not generate an unknown-frequency problem.");
+  const { R, C, L, f, angle, reactance } = selected;
+  const image = useRC ? "series-rc" : "series-rl";
+  const reactiveGiven = useRC ? ["C", engineering(C, "F")] : ["L", engineering(L, "H")];
+  const frequencyStep = useRC
+    ? `f = 1/(2πC${"X<sub>C</sub>"}) = ${engineering(f, "Hz")}`
+    : `f = X<sub>L</sub>/(2πL) = ${engineering(f, "Hz")}`;
+  return problem({
+    type: "unknownFrequency", group: "unknown", tag: "Unknown frequency",
+    image, imageAlt: `Series ${useRC ? "RC" : "RL"} circuit at an unknown frequency`,
+    prompt: "Find the frequency that gives the specified impedance angle.",
+    detail: `Use the angle of Z = R ${useRC ? "−" : "+"} jX to find the required reactance first.`,
+    given: [["R", engineering(R, "Ω")], reactiveGiven, ["∠Z", `${angle}°`]],
+    answer: `<div>f = ${engineering(f, "Hz")}</div>`,
+    steps: [
+      `|∠Z| = tan⁻¹(X/R), so X = R tan(|∠Z|).`,
+      `Required reactance: ${engineering(reactance, "Ω")}.`,
+      frequencyStep,
+      `Check: the resulting impedance angle is ${angle}°.`
+    ],
+    result: { re: f, im: 0 }, targetAngle: angle, circuitFamily: useRC ? "RC" : "RL",
+    verificationAngle: degrees(Math.atan2(useRC ? -reactance : reactance, R))
+  });
+}
+
+function phasorAddition() {
+  const selected = balancedComplex(() => {
+    const magnitudeA = pick(PHASOR_MAGNITUDES), angleA = pick(PHASOR_ANGLES);
+    const magnitudeB = pick(PHASOR_MAGNITUDES), angleB = pick(PHASOR_ANGLES);
+    const a = fromPolar(magnitudeA, angleA), b = fromPolar(magnitudeB, angleB), z = add(a, b);
+    const valid = polar(z).magnitude >= .25 * (magnitudeA + magnitudeB);
+    return { magnitudeA, angleA, magnitudeB, angleB, a, b, z, valid };
+  });
+  const { magnitudeA, angleA, magnitudeB, angleB, a, b, z } = selected, p = polar(z);
+  const expression = `${phasorText(magnitudeA, angleA)} + ${phasorText(magnitudeB, angleB)}`;
+  return problem({
+    type: "phasorAddition", group: "waveforms", tag: "Phasor addition",
+    image: null, imageAlt: "",
+    prompt: `Calculate <span class="math-expression">${expression}</span>.`,
+    detail: "Express the result in rectangular and polar form.",
+    given: [["A", phasorText(magnitudeA, angleA)], ["B", phasorText(magnitudeB, angleB)]],
+    answer: `<div>A + B = ${complexText(z)}</div><div>A + B = ${phasorText(p.magnitude, p.angle)}</div>`,
+    steps: [`A = ${complexText(a)}`, `B = ${complexText(b)}`, `A + B = (${sig(a.re)} + ${sig(b.re)}) + j(${sig(a.im)} + ${sig(b.im)})`, `A + B = ${complexText(z)} = ${phasorText(p.magnitude, p.angle)}`],
+    result: z, operationCheck: { operation: "add", a, b }
+  });
+}
+
+function phasorDivision() {
+  const selected = balancedComplex(() => {
+    const magnitudeA = pick(PHASOR_MAGNITUDES), angleA = pick(PHASOR_ANGLES);
+    const magnitudeB = pick(PHASOR_MAGNITUDES), angleB = pick(PHASOR_ANGLES);
+    const a = fromPolar(magnitudeA, angleA), b = fromPolar(magnitudeB, angleB), z = divide(a, b);
+    return { magnitudeA, angleA, magnitudeB, angleB, a, b, z };
+  });
+  const { magnitudeA, angleA, magnitudeB, angleB, a, b, z } = selected, p = polar(z);
+  const numerator = phasorText(magnitudeA, angleA), denominator = phasorText(magnitudeB, angleB);
+  return problem({
+    type: "phasorDivision", group: "waveforms", tag: "Phasor division",
+    image: null, imageAlt: "",
+    prompt: `Calculate <span class="math-fraction"><span>${numerator}</span><span>${denominator}</span></span>.`,
+    detail: "Divide the magnitudes and subtract the denominator angle from the numerator angle.",
+    given: [["Numerator", numerator], ["Denominator", denominator]],
+    answer: `<div>Result = ${phasorText(p.magnitude, p.angle)}</div><div>Result = ${complexText(z)}</div>`,
+    steps: [`Magnitude = ${sig(magnitudeA)}/${sig(magnitudeB)} = ${sig(p.magnitude)}`, `Angle = ${sig(angleA)}° − (${sig(angleB)}°) = ${sig(p.angle)}°`, `Result = ${phasorText(p.magnitude, p.angle)} = ${complexText(z)}`],
+    result: z, operationCheck: { operation: "divide", a, b }
+  });
+}
+
+function waveformToPhasor() {
+  const peak = pick(PHASOR_MAGNITUDES), f = pick(values.frequency), angle = pick(PHASOR_ANGLES);
+  const rms = peak / Math.sqrt(2), result = fromPolar(rms, angle);
+  const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
+  return problem({
+    type: "waveformToPhasor", group: "waveforms", tag: "Waveform to phasor",
+    image: null, imageAlt: "",
+    prompt: `Convert <span class="math-expression">v(t) = ${waveform}</span> to an RMS phasor.`,
+    detail: "Use cosine as the reference and convert peak amplitude to RMS.",
+    given: [["Peak", engineering(peak, "V")], ["f", engineering(f, "Hz")], ["Phase", `${angle}°`]],
+    answer: `<div>V = ${phasorText(rms, angle, "V RMS")}</div>`,
+    steps: [`V<sub>rms</sub> = V<sub>p</sub>/√2 = ${engineering(peak, "V")}/√2 = ${engineering(rms, "V")}`, `The cosine phase becomes the phasor angle: ${angle}°.`, `V = ${phasorText(rms, angle, "V RMS")}`],
+    result, waveformCheck: { peak, rms, angle, direction: "to-phasor" }
+  });
+}
+
+function phasorToWaveform() {
+  const rms = pick(PHASOR_MAGNITUDES), f = pick(values.frequency), angle = pick(PHASOR_ANGLES);
+  const peak = rms * Math.sqrt(2), result = fromPolar(rms, angle);
+  const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
+  return problem({
+    type: "phasorToWaveform", group: "waveforms", tag: "Phasor to waveform",
+    image: null, imageAlt: "",
+    prompt: `Convert <span class="math-expression">V = ${phasorText(rms, angle, "V RMS")}</span> to a time-domain waveform.`,
+    detail: "Use cosine form and convert the RMS magnitude to peak amplitude.",
+    given: [["V", phasorText(rms, angle, "V RMS")], ["f", engineering(f, "Hz")]],
+    answer: `<div>v(t) = ${waveform}</div>`,
+    steps: [`V<sub>p</sub> = √2 V<sub>rms</sub> = √2(${engineering(rms, "V")}) = ${engineering(peak, "V")}`, `ω = 2πf = 2π(${engineering(f, "Hz")})`, `v(t) = ${waveform}`],
+    result, waveformCheck: { peak, rms, angle, direction: "to-waveform" }
+  });
+}
+
+function parallelSourceCurrent() {
+  const { f, R, C, Xc } = balancedRC(), Vs = pick(values.voltage), ir = Vs / R, ic = Vs / Xc, total = { re: ir, im: ic }, p = polar(total);
+  return problem({ type: "parallelSourceCurrent", group: "phasors", tag: "Current phasor", image: "parallel-rc", imageAlt: "Parallel RC circuit with branch currents marked",
+    prompt: "Find the total current supplied by the source.", detail: "Add the resistor and capacitor branch-current phasors.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")]], answer: complexLines(S.Is, total, "A"),
+    steps: [`${S.ZC} = 1/(j2πfC) = −j${engineering(Xc, "Ω")}`, `${S.IR} = ${S.Vs}/R = ${engineering(ir, "A")} ∠ 0°`, `${S.IC} = ${S.Vs}/${S.ZC} = ${engineering(ic, "A")} ∠ 90°`, `${S.Is} = ${S.IR} + ${S.IC} = ${engineering(ir, "A")} + j${engineering(ic, "A")}`, `|${S.Is}| = ${engineering(p.magnitude, "A")},   ∠${S.Is} = ${sig(p.angle)}°`], result: total });
+}
+
+function loadedVoltageDivider() {
+  const useRC = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const f = pick(values.frequency), R1 = pick(values.resistance), R2 = pick(values.resistance), Vs = pick(values.voltage);
+    if (!isBalanced(R2 / R1)) return null;
+    let component, reactance, reactiveZ;
+    if (useRC) {
+      component = pick(values.capacitance);
+      reactance = 1 / (TWO_PI * f * component);
+      reactiveZ = { re: 0, im: -reactance };
+    } else {
+      component = pick(values.inductance);
+      reactance = TWO_PI * f * component;
+      reactiveZ = { re: 0, im: reactance };
+    }
+    if (!isBalanced(reactance / R2)) return null;
+    const branch = parallelZ({ re: R2, im: 0 }, reactiveZ);
+    const total = add({ re: R1, im: 0 }, branch);
+    const current = divide({ re: Vs, im: 0 }, total);
+    const vout = multiply(current, branch), angle = Math.abs(polar(vout).angle);
+    if (angle < 10 || angle > 80) return null;
+    return { f, R1, R2, Vs, component, reactance, reactiveZ, branch, total, current, vout };
+  }, "Could not generate a balanced loaded voltage divider.");
+  const { f, R1, R2, Vs, component, reactance, branch, total, vout } = selected;
+  const reactiveSymbol = useRC ? S.ZC : S.ZL, componentSymbol = useRC ? "C" : "L", componentUnit = useRC ? "F" : "H";
+  const sign = branch.im < 0 ? "−" : "+";
+  return problem({
+    type: "loadedVoltageDivider", group: "phasors", tag: "Loaded voltage divider",
+    image: useRC ? "loaded-rc-divider" : "loaded-rl-divider",
+    imageAlt: `Resistor R1 feeding a parallel R2-${componentSymbol} load with the output measured across the load`,
+    prompt: `Find the loaded output-voltage phasor ${S.Vout}.`,
+    detail: `First combine ${S.R2} and ${componentSymbol} in parallel, then use the impedance voltage divider.`,
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], [S.R1, engineering(R1, "Ω")], [S.R2, engineering(R2, "Ω")], [componentSymbol, engineering(component, componentUnit)]],
+    answer: complexLines(S.Vout, vout, "V"),
+    steps: [
+      `${reactiveSymbol} = ${useRC ? "−" : ""}j${engineering(reactance, "Ω")}`,
+      `${S.Zp} = (${S.R2}${reactiveSymbol})/(${S.R2} + ${reactiveSymbol}) = ${engineering(branch.re, "Ω")} ${sign} j${engineering(Math.abs(branch.im), "Ω")}`,
+      `Z = ${S.R1} + ${S.Zp} = ${rectangular(total, "Ω")}`,
+      `${S.Vout} = ${S.Vs}[${S.Zp}/(${S.R1} + ${S.Zp})]`,
+      `${S.Vout} = ${engineering(polar(vout).magnitude, "V")} ∠ ${sig(polar(vout).angle)}°`
+    ],
+    result: vout, circuitFamily: useRC ? "RC" : "RL",
+    dividerCheck: { ratio: divide(branch, total), sourceMagnitude: Vs }
+  });
+}
+
+function requiredSourceVoltage() {
+  const { f, R, C, Xc } = balancedRC(), targetMagnitude = pick(values.voltage);
+  const zc = { re: 0, im: -Xc }, z = add({ re: R, im: 0 }, zc);
+  const divider = divide(zc, z), requiredMagnitude = targetMagnitude / polar(divider).magnitude;
+  const vc = multiply({ re: requiredMagnitude, im: 0 }, divider);
+  return problem({
+    type: "requiredSourceVoltage", group: "phasors", tag: "Required source voltage",
+    image: "series-rc-vc", imageAlt: "Series RC circuit with the capacitor voltage marked",
+    prompt: `Find the source-voltage magnitude required to make |${S.VC}| = ${engineering(targetMagnitude, "V")}.`,
+    detail: "Treat the source as the 0° reference and use the impedance voltage-divider magnitude.",
+    given: [["f", engineering(f, "Hz")], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")], [`Desired |${S.VC}|`, engineering(targetMagnitude, "V")]],
+    answer: `<div>${S.Vs} = ${engineering(requiredMagnitude, "V")} ∠ 0°</div>`,
+    steps: [
+      `${S.ZC} = −j${engineering(Xc, "Ω")}`,
+      `${S.VC}/${S.Vs} = ${S.ZC}/(R + ${S.ZC}) = ${sig(polar(divider).magnitude)} ∠ ${sig(polar(divider).angle)}°`,
+      `|${S.Vs}| = |${S.VC}|/|${S.VC}/${S.Vs}|`,
+      `|${S.Vs}| = ${engineering(requiredMagnitude, "V")}`,
+      `Check: ${S.VC} = ${engineering(polar(vc).magnitude, "V")} ∠ ${sig(polar(vc).angle)}°`
+    ],
+    result: vc, solvedSourceMagnitude: requiredMagnitude, targetMagnitude
+  });
+}
+
+function seriesResistorPower() {
+  const useRC = Math.random() < .5, Vs = pick(values.voltage);
+  let f, R, reactiveGiven, impedanceStep, z, image, imageAlt;
+  if (useRC) {
+    const selected = balancedRC();
+    f = selected.f; R = selected.R; reactiveGiven = ["C", engineering(selected.C, "F")];
+    z = { re: R, im: -selected.Xc }; impedanceStep = `${S.ZC} = −j${engineering(selected.Xc, "Ω")}`; image = "series-rc"; imageAlt = "Series RC circuit";
+  } else {
+    const selected = balancedRL();
+    f = selected.f; R = selected.R; reactiveGiven = ["L", engineering(selected.L, "H")];
+    z = { re: R, im: selected.Xl }; impedanceStep = `${S.ZL} = j${engineering(selected.Xl, "Ω")}`; image = "series-rl"; imageAlt = "Series RL circuit";
+  }
+  const current = divide({ re: Vs, im: 0 }, z), currentMagnitude = polar(current).magnitude, power = currentMagnitude * currentMagnitude * R;
+  return problem({ type: "seriesResistorPower", group: "power", tag: "Resistor power", image, imageAlt,
+    prompt: "Find the average power dissipated in the resistor.", detail: "Use RMS phasors and report real power.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], reactiveGiven],
+    answer: `<div>${S.PR} = ${engineering(power, "W")}</div>`,
+    steps: [impedanceStep, `Z = ${engineering(polar(z).magnitude, "Ω")} ∠ ${sig(polar(z).angle)}°`, `|I| = |${S.Vs}/Z| = ${engineering(currentMagnitude, "A")}`, `${S.PR} = |I|²R = ${engineering(power, "W")}`],
+    result: { re: power, im: 0 }, resistorDirectlyAcrossSource: false });
+}
+
+function mixedResistorPower() {
+  const selected = balancedComplex(() => {
+    const f = pick(values.frequency), R1 = pick(values.resistance), R2 = pick(values.resistance), C = pick(values.capacitance);
+    const Xc = 1 / (TWO_PI * f * C), zc = { re: 0, im: -Xc }, branch = parallelZ({ re: R2, im: 0 }, zc), z = add({ re: R1, im: 0 }, branch);
+    return { f, R1, R2, C, Xc, branch, z };
+  });
+  const { f, R1, R2, C, Xc, branch, z } = selected, Vs = pick(values.voltage);
+  const current = divide({ re: Vs, im: 0 }, z), branchVoltage = multiply(current, branch), branchVoltageMagnitude = polar(branchVoltage).magnitude;
+  const power = branchVoltageMagnitude * branchVoltageMagnitude / R2;
+  return problem({ type: "mixedResistorPower", group: "power", tag: "Resistor power", image: "series-r-parallel-rc", imageAlt: "Resistor R1 in series with parallel resistor R2 and capacitor C",
+    prompt: `Find the average power dissipated in ${S.R2}.`, detail: "First find the RMS voltage across the parallel branch.",
+    given: [["f", engineering(f, "Hz")], [S.Vs, `${engineering(Vs, "V")} ∠ 0°`], [S.R1, engineering(R1, "Ω")], [S.R2, engineering(R2, "Ω")], ["C", engineering(C, "F")]],
+    answer: `<div>${S.PR2} = ${engineering(power, "W")}</div>`,
+    steps: [`${S.ZC} = −j${engineering(Xc, "Ω")}`, `${S.Zp} = (${S.R2}${S.ZC})/(${S.R2} + ${S.ZC})`, `Z = ${S.R1} + ${S.Zp} = ${engineering(z.re, "Ω")} − j${engineering(Math.abs(z.im), "Ω")}`, `I = ${S.Vs}/Z`, `|${S.Vp}| = |I ${S.Zp}| = ${engineering(branchVoltageMagnitude, "V")}`, `${S.PR2} = |${S.Vp}|²/${S.R2} = ${engineering(power, "W")}`],
+    result: { re: power, im: 0 }, resistorDirectlyAcrossSource: false });
+}
+
+function rcFilterResponse() {
+  const { f, R, C, Xc } = balancedRC(), Vin = pick(values.voltage), x = R / Xc;
+  const outputAcrossC = Math.random() < .5;
+  const ratio = outputAcrossC
+    ? { re: 1 / (1 + x * x), im: -x / (1 + x * x) }
+    : { re: x * x / (1 + x * x), im: x / (1 + x * x) };
+  const output = { re: Vin * ratio.re, im: Vin * ratio.im }, pr = polar(ratio);
+  const filterType = outputAcrossC ? "low-pass" : "high-pass";
+  const divider = outputAcrossC ? `${S.ZC}/(R + ${S.ZC})` : `R/(R + ${S.ZC})`;
+  const behavior = outputAcrossC ? `At low frequency, |${S.ZC}| is large, so ${S.Vout} ≈ ${S.Vin}.` : `At low frequency, |${S.ZC}| is large, so ${S.Vout} ≈ 0.`;
+  return problem({ type: "rcFilterResponse", group: "filters", tag: "RC filter", image: outputAcrossC ? "rc-lowpass" : "rc-highpass", imageAlt: `RC filter with output across the ${outputAcrossC ? "capacitor" : "resistor"}`,
+    prompt: "What type of filter is this? Find its voltage ratio and output phasor.", detail: "Identify the filter from the output location, then use the impedance voltage divider.",
+    given: [["f", engineering(f, "Hz")], [S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["C", engineering(C, "F")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${S.Vout}/${S.Vin} = ${sig(pr.magnitude)} ∠ ${sig(pr.angle)}°</div>${complexLines(S.Vout, output, "V")}`,
+    steps: [`${behavior} Therefore this is a ${filterType} filter.`, `${S.ZC} = 1/(j2πfC) = −j${engineering(Xc, "Ω")}`, `${S.Vout} = ${S.Vin}[${divider}]`, `|${S.Vout}/${S.Vin}| = ${sig(pr.magnitude)}`, `∠(${S.Vout}/${S.Vin}) = ${sig(pr.angle)}°`], result: output });
+}
+
+function lrFilterResponse() {
+  const { f, R, L, Xl } = balancedRL(), Vin = pick(values.voltage), outputAcrossR = Math.random() < .5;
+  const denominator = { re: R, im: Xl };
+  const ratio = outputAcrossR ? divide({ re: R, im: 0 }, denominator) : divide({ re: 0, im: Xl }, denominator);
+  const output = { re: Vin * ratio.re, im: Vin * ratio.im }, pr = polar(ratio);
+  const filterType = outputAcrossR ? "low-pass" : "high-pass";
+  const divider = outputAcrossR ? `R/(R + ${S.ZL})` : `${S.ZL}/(R + ${S.ZL})`;
+  const behavior = outputAcrossR ? `At low frequency, |${S.ZL}| is small, so ${S.Vout} ≈ ${S.Vin}.` : `At low frequency, |${S.ZL}| is small, so ${S.Vout} ≈ 0.`;
+  return problem({ type: "lrFilterResponse", group: "filters", tag: "LR filter", image: outputAcrossR ? "lr-output-r" : "lr-output-l", imageAlt: `LR filter with output across the ${outputAcrossR ? "resistor" : "inductor"}`,
+    prompt: "What type of filter is this? Find its voltage ratio and output phasor.", detail: "Identify the filter from the output location, then use the impedance voltage divider.",
+    given: [["f", engineering(f, "Hz")], [S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${S.Vout}/${S.Vin} = ${sig(pr.magnitude)} ∠ ${sig(pr.angle)}°</div>${complexLines(S.Vout, output, "V")}`,
+    steps: [`${behavior} Therefore this is a ${filterType} filter.`, `${S.ZL} = j2πfL = j${engineering(Xl, "Ω")}`, `${S.Vout} = ${S.Vin}[${divider}]`, `|${S.Vout}/${S.Vin}| = ${sig(pr.magnitude)}`, `∠(${S.Vout}/${S.Vin}) = ${sig(pr.angle)}°`], result: output });
+}
+
+function cutoffFrequency() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, R = pick(values.resistance);
+  let fc, image, imageAlt, reactiveGiven, cutoffSteps, family;
+  if (useRC) {
+    const C = pick(values.capacitance);
+    fc = 1 / (TWO_PI * R * C); family = "RC"; reactiveGiven = ["C", engineering(C, "F")];
+    image = lowpass ? "rc-lowpass" : "rc-highpass"; imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+    cutoffSteps = [`At cutoff, |${S.ZC}| = R.`, `1/(2π${S.fc}C) = R`, `${S.fc} = 1/(2πRC) = ${engineering(fc, "Hz")}`];
+  } else {
+    const L = pick(values.inductance);
+    fc = R / (TWO_PI * L); family = "LR"; reactiveGiven = ["L", engineering(L, "H")];
+    image = lowpass ? "lr-output-r" : "lr-output-l"; imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+    cutoffSteps = [`At cutoff, |${S.ZL}| = R.`, `2π${S.fc}L = R`, `${S.fc} = R/(2πL) = ${engineering(fc, "Hz")}`];
+  }
+  return problem({ type: "cutoffFrequency", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Find its cutoff frequency.", detail: "Also state the voltage ratio and phase shift at cutoff.",
+    given: [["R", engineering(R, "Ω")], reactiveGiven],
+    answer: `<div>Filter type: ${lowpass ? "low-pass" : "high-pass"}</div><div>${S.fc} = ${engineering(fc, "Hz")}</div><div>${S.Vout}/${S.Vin} = 0.707 ∠ ${lowpass ? "−45" : "+45"}°</div>`,
+    steps: [`The output location makes this a ${lowpass ? "low-pass" : "high-pass"} filter.`, ...cutoffSteps, `The impedance divider gives |${S.Vout}/${S.Vin}| = 1/√2 = 0.707 and phase = ${lowpass ? "−45" : "+45"}°.`], result: { re: fc, im: 0 } });
+}
+
+function rlcFilterMetrics() {
+  const { R, L, C, X0, f0 } = balancedResonantRLC(), outputAcrossR = Math.random() < .5;
+  const bandwidth = R / (TWO_PI * L), quality = X0 / R, filterType = outputAcrossR ? "band-pass" : "band-stop";
+  const behavior = outputAcrossR
+    ? `At resonance, ${S.ZL} + ${S.ZC} = 0, current is maximum, and the resistor voltage is maximum.`
+    : `At resonance, ${S.ZL} + ${S.ZC} = 0, so the combined voltage across L and C is zero.`;
+  return problem({ type: "rlcFilterMetrics", group: "filters", tag: "Series RLC filter", image: outputAcrossR ? "rlc-output-r" : "rlc-output-lc", imageAlt: `Series RLC filter with output across ${outputAcrossR ? "the resistor" : "the inductor-capacitor pair"}`,
+    prompt: `What type of filter is this? Find ${S.f0}, bandwidth, and quality factor.`, detail: "Use the series-resonance relationships and the marked output location.",
+    given: [["R", engineering(R, "Ω")], ["L", engineering(L, "H")], ["C", engineering(C, "F")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${S.f0} = ${engineering(f0, "Hz")}</div><div>Bandwidth = ${engineering(bandwidth, "Hz")}</div><div>Q = ${sig(quality)}</div>`,
+    steps: [`${behavior} Therefore this is a ${filterType} filter.`, `At resonance, ${S.ZL} + ${S.ZC} = 0.`, `${S.f0} = 1/(2π√(LC)) = ${engineering(f0, "Hz")}`, `Bandwidth = R/(2πL) = ${engineering(bandwidth, "Hz")}`, `Q = 2π${S.f0}L/R = ${S.f0}/Bandwidth = ${sig(quality)}`], result: { re: f0, im: bandwidth } });
+}
+
+function filterComponentDesign() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5;
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    return fc >= 100 && fc <= 100000 ? { R, component, fc } : null;
+  }, "Could not generate a filter-component design problem.");
+  const { R, component: selectedComponent, fc: selectedCutoff } = selected;
+  let component, unit, symbol, fc, image, imageAlt, formula, family;
+  if (useRC) {
+    component = selectedComponent; unit = "F"; symbol = "C"; family = "RC"; fc = selectedCutoff;
+    image = lowpass ? "rc-lowpass" : "rc-highpass";
+    imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+    formula = `C = 1/(2πR${S.fc}) = ${engineering(component, unit)}`;
+  } else {
+    component = selectedComponent; unit = "H"; symbol = "L"; family = "LR"; fc = selectedCutoff;
+    image = lowpass ? "lr-output-r" : "lr-output-l";
+    imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+    formula = `L = R/(2π${S.fc}) = ${engineering(component, unit)}`;
+  }
+  const filterType = lowpass ? "low-pass" : "high-pass";
+  return problem({
+    type: "filterComponentDesign", group: "filters", tag: `${family} filter design`, image, imageAlt,
+    prompt: `What type of filter is this? Find the required value of ${symbol}.`,
+    detail: "Choose the reactive component to produce the specified cutoff frequency.",
+    given: [["R", engineering(R, "Ω")], [S.fc, engineering(fc, "Hz")]],
+    answer: `<div>Filter type: ${filterType}</div><div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, useRC ? `At cutoff, 1/(2π${S.fc}C) = R.` : `At cutoff, 2π${S.fc}L = R.`, formula],
+    result: { re: component, im: 0 }, angleGuard: false, designCheck: { actual: useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component), target: fc }, circuitFamily: family
+  });
+}
+
+function resonantComponentDesign() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC();
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 ? candidate : null;
+  }, "Could not generate a resonant-component design problem.");
+  const { R, L, C, f0 } = selected, solveForC = Math.random() < .5;
+  const symbol = solveForC ? "C" : "L", component = solveForC ? C : L, unit = solveForC ? "F" : "H";
+  const knownGiven = solveForC ? ["L", engineering(L, "H")] : ["C", engineering(C, "F")];
+  const formula = solveForC ? `C = 1/[(2π${S.f0})²L]` : `L = 1/[(2π${S.f0})²C]`;
+  return problem({
+    type: "resonantComponentDesign", group: "resonance", tag: "RLC resonance design",
+    image: "series-rlc", imageAlt: "Series RLC circuit",
+    prompt: `Find ${symbol} for the specified resonant frequency.`,
+    detail: "Use the series-resonance relationship.",
+    given: [["R", engineering(R, "Ω")], knownGiven, [S.f0, engineering(f0, "Hz")]],
+    answer: `<div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [`${S.f0} = 1/(2π√(LC))`, `${formula} = ${engineering(component, unit)}`],
+    result: { re: component, im: 0 }, angleGuard: false,
+    designCheck: { actual: 1 / (TWO_PI * Math.sqrt(L * C)), target: f0 }, designMode: solveForC ? "C" : "L"
+  });
+}
+
+function rlcMetricDesign() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC(), quality = candidate.X0 / candidate.R;
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 && quality >= .5 ? candidate : null;
+  }, "Could not generate an RLC metric-design problem.");
+  const { R, L, C, X0, f0 } = selected, designQ = Math.random() < .5;
+  const bandwidth = R / (TWO_PI * L), quality = X0 / R;
+  const metricName = designQ ? "quality factor" : "bandwidth";
+  const metricGiven = designQ ? ["Q", sig(quality)] : ["Bandwidth", engineering(bandwidth, "Hz")];
+  const calculation = designQ
+    ? `R = √(L/C)/Q = ${engineering(R, "Ω")}`
+    : `R = 2πL(Bandwidth) = ${engineering(R, "Ω")}`;
+  return problem({
+    type: "rlcMetricDesign", group: "resonance", tag: "RLC resonance design",
+    image: "series-rlc", imageAlt: "Series RLC circuit",
+    prompt: `Find R for the specified ${metricName}.`,
+    detail: "Use the series-RLC bandwidth or quality-factor relationship.",
+    given: [["L", engineering(L, "H")], ["C", engineering(C, "F")], [S.f0, engineering(f0, "Hz")], metricGiven],
+    answer: `<div>R = ${engineering(R, "Ω")}</div>`,
+    steps: [designQ ? `Q = √(L/C)/R` : `Bandwidth = R/(2πL)`, calculation],
+    result: { re: R, im: 0 }, angleGuard: false,
+    designCheck: { actual: designQ ? X0 / R : R / (TWO_PI * L), target: designQ ? quality : bandwidth }, designMode: designQ ? "Q" : "bandwidth"
+  });
+}
+
+function filterFrequencyComparison() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, Vin = pick(values.voltage);
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    return fc >= 100 && fc <= 100000 ? { R, component, fc } : null;
+  }, "Could not generate a filter frequency-comparison problem.");
+  const { R, component: selectedComponent, fc: selectedCutoff } = selected;
+  let component, fc, image, imageAlt, family, ratioAt;
+  if (useRC) {
+    component = selectedComponent; fc = selectedCutoff; family = "RC";
+    image = lowpass ? "rc-lowpass" : "rc-highpass";
+    imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+    ratioAt = (f) => rcFilterRatio(R, component, f, lowpass);
+  } else {
+    component = selectedComponent; fc = selectedCutoff; family = "LR";
+    image = lowpass ? "lr-output-r" : "lr-output-l";
+    imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+    ratioAt = (f) => lrFilterRatio(R, component, f, lowpass);
+  }
+  const frequencies = [fc / 10, fc, fc * 10];
+  const rows = frequencies.map((f) => {
+    const ratio = ratioAt(f), p = polar(ratio);
+    return { f, ratio, magnitude: p.magnitude, angle: p.angle, db: decibels(p.magnitude), outputMagnitude: Vin * p.magnitude };
+  });
+  const filterType = lowpass ? "low-pass" : "high-pass", unit = useRC ? "F" : "H";
+  const answerRows = rows.map((row) => `<div>At ${engineering(row.f, "Hz")}: |${S.Vout}/${S.Vin}| = ${sig(row.magnitude)}, gain = ${sig(row.db)} dB, |${S.Vout}| = ${engineering(row.outputMagnitude, "V")}</div>`).join("");
+  return problem({
+    type: "filterFrequencyComparison", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Compare its output and gain at three frequencies.",
+    detail: `Calculate the response at 0.1${S.fc}, ${S.fc}, and 10${S.fc} using impedances.`,
+    given: [[S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)], [S.fc, engineering(fc, "Hz")]],
+    answer: `<div>Filter type: ${filterType}</div>${answerRows}`,
+    steps: [`The output location makes this a ${filterType} filter.`, `For each frequency, calculate the reactive impedance and use the impedance voltage divider.`, `Gain in dB = 20 log₁₀|${S.Vout}/${S.Vin}|.`, `At ${S.fc}, the ratio is 0.707 and the gain is −3.01 dB.`],
+    result: multiply({ re: Vin, im: 0 }, rows[1].ratio), frequencyRows: rows
+  });
+}
+
+function filterDecibelGain() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, Vin = pick(values.voltage);
+  let f, R, component, unit, ratio, image, imageAlt, family;
+  if (useRC) {
+    const selected = balancedRC(); f = selected.f; R = selected.R; component = selected.C; unit = "F"; family = "RC";
+    ratio = rcFilterRatio(R, component, f, lowpass);
+    image = lowpass ? "rc-lowpass" : "rc-highpass"; imageAlt = `RC filter with output across the ${lowpass ? "capacitor" : "resistor"}`;
+  } else {
+    const selected = balancedRL(); f = selected.f; R = selected.R; component = selected.L; unit = "H"; family = "LR";
+    ratio = lrFilterRatio(R, component, f, lowpass);
+    image = lowpass ? "lr-output-r" : "lr-output-l"; imageAlt = `LR filter with output across the ${lowpass ? "resistor" : "inductor"}`;
+  }
+  const p = polar(ratio), gainDb = decibels(p.magnitude), output = multiply({ re: Vin, im: 0 }, ratio);
+  const filterType = lowpass ? "low-pass" : "high-pass";
+  return problem({
+    type: "filterDecibelGain", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Find its voltage gain in decibels and its output phasor.",
+    detail: "First use the impedance divider to find the voltage ratio, then convert its magnitude to dB.",
+    given: [["f", engineering(f, "Hz")], [S.Vin, `${engineering(Vin, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)]],
+    answer: `<div>Filter type: ${filterType}</div><div>Gain = ${sig(gainDb)} dB</div><div>${S.Vout}/${S.Vin} = ${sig(p.magnitude)} ∠ ${sig(p.angle)}°</div>${complexLines(S.Vout, output, "V")}`,
+    steps: [`The output location makes this a ${filterType} filter.`, `Use the impedance divider to obtain |${S.Vout}/${S.Vin}| = ${sig(p.magnitude)}.`, `Gain = 20 log₁₀(${sig(p.magnitude)}) = ${sig(gainDb)} dB.`, `${S.Vout} = ${S.Vin}(${S.Vout}/${S.Vin}) = ${engineering(polar(output).magnitude, "V")} ∠ ${sig(polar(output).angle)}°`],
+    result: output, gainCheck: { ratioMagnitude: p.magnitude, db: gainDb }
+  });
+}
+
+function filterGainFrequency() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, targetDb = pick([-1, -3, -6, -10, -12]);
+  const targetRatio = 10 ** (targetDb / 20);
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    const normalizedFrequency = lowpass
+      ? Math.sqrt(1 / (targetRatio * targetRatio) - 1)
+      : targetRatio / Math.sqrt(1 - targetRatio * targetRatio);
+    const f = fc * normalizedFrequency;
+    return fc >= 100 && fc <= 100000 && f >= 10 && f <= 1000000 ? { R, component, fc, f } : null;
+  }, "Could not generate an inverse filter-gain problem.");
+  const { R, component, fc, f } = selected;
+  const family = useRC ? "RC" : "LR", unit = useRC ? "F" : "H";
+  const image = useRC ? (lowpass ? "rc-lowpass" : "rc-highpass") : (lowpass ? "lr-output-r" : "lr-output-l");
+  const imageAlt = `${family} filter with output across the ${useRC ? (lowpass ? "capacitor" : "resistor") : (lowpass ? "resistor" : "inductor")}`;
+  const ratio = useRC ? rcFilterRatio(R, component, f, lowpass) : lrFilterRatio(R, component, f, lowpass);
+  const actualDb = decibels(polar(ratio).magnitude), filterType = lowpass ? "low-pass" : "high-pass";
+  const frequencyEquation = lowpass
+    ? `f = ${S.fc}√(1/M² − 1)`
+    : `f = ${S.fc}M/√(1 − M²)`;
+  return problem({
+    type: "filterGainFrequency", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Find the frequency that gives the specified voltage gain.",
+    detail: "Convert the dB value to a voltage ratio, then solve the impedance-divider magnitude for frequency.",
+    given: [["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)], ["Gain", `${targetDb} dB`]],
+    answer: `<div>Filter type: ${filterType}</div><div>f = ${engineering(f, "Hz")}</div><div>|${S.Vout}/${S.Vin}| = ${sig(targetRatio)}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, `M = |${S.Vout}/${S.Vin}| = 10^(Gain/20) = ${sig(targetRatio)}`, `${S.fc} = ${useRC ? "1/(2πRC)" : "R/(2πL)"} = ${engineering(fc, "Hz")}`, `${frequencyEquation} = ${engineering(f, "Hz")}`, `Check: 20 log₁₀|${S.Vout}/${S.Vin}| = ${sig(actualDb)} dB.`],
+    result: ratio, gainCheck: { ratioMagnitude: polar(ratio).magnitude, db: actualDb }, designCheck: { actual: actualDb, target: targetDb }, circuitFamily: family
+  });
+}
+
+function resonanceCurrentVoltages() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC(), quality = candidate.X0 / candidate.R;
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 && quality >= .5 ? candidate : null;
+  }, "Could not generate a resonance voltage problem.");
+  const { R, L, C, X0, f0 } = selected, Vs = pick(values.voltage);
+  const currentMagnitude = Vs / R, quality = X0 / R;
+  const current = { re: currentMagnitude, im: 0 };
+  const vl = { re: 0, im: currentMagnitude * X0 }, vc = { re: 0, im: -currentMagnitude * X0 };
+  return problem({
+    type: "resonanceCurrentVoltages", group: "resonance", tag: "RLC resonance",
+    image: "series-rlc-voltages", imageAlt: "Series RLC circuit with component-voltage polarities marked",
+    prompt: `Find ${S.f0}, I, ${S.VL}, and ${S.VC} at resonance.`,
+    detail: "At series resonance, the inductive and capacitive reactances cancel and the total impedance is R.",
+    given: [[S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")], ["C", engineering(C, "F")]],
+    answer: `<div>${S.f0} = ${engineering(f0, "Hz")}</div>${polarLine("I", current, "A")}${polarLine(S.VL, vl, "V")}${polarLine(S.VC, vc, "V")}<div>Q = ${sig(quality)}</div>`,
+    steps: [`${S.f0} = 1/(2π√(LC)) = ${engineering(f0, "Hz")}`, `At resonance, ${S.ZL} + ${S.ZC} = 0 and Z = R.`, `I = ${S.Vs}/R = ${engineering(currentMagnitude, "A")} ∠ 0°`, `X<sub>0</sub> = 2π${S.f0}L = √(L/C) = ${engineering(X0, "Ω")}`, `${S.VL} = I(jX<sub>0</sub>) = ${engineering(polar(vl).magnitude, "V")} ∠ 90°`, `${S.VC} = I(−jX<sub>0</sub>) = ${engineering(polar(vc).magnitude, "V")} ∠ −90°`, `${S.VL} + ${S.VC} = 0, so ${S.Vs} = ${S.VR}.`],
+    result: current, angleGuard: false,
+    resonanceCheck: { reactiveSum: add(vl, vc), sourceMagnitude: Vs, resistorVoltageMagnitude: currentMagnitude * R }
+  });
+}
+
+const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, phasorAddition, phasorDivision, waveformToPhasor, phasorToWaveform, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, resonanceCurrentVoltages, filterFrequencyComparison, filterDecibelGain, filterGainFrequency };
+const sets = {
+  mixed: Object.keys(generators),
+  impedance: ["seriesRCImpedance", "seriesRLImpedance", "seriesRLCImpedance", "parallelRCImpedance", "parallelRLImpedance"],
+  advanced: ["seriesThreeImpedance", "parallelThreeImpedance", "seriesParallelImpedance", "parallelSeriesImpedance"],
+  phasors: ["seriesCurrent", "capacitorVoltage", "seriesComponentVoltages", "parallelSourceCurrent", "loadedVoltageDivider", "requiredSourceVoltage"],
+  unknown: ["unknownComponent", "unknownFrequency"],
+  power: ["seriesResistorPower", "mixedResistorPower"],
+  filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics", "filterComponentDesign", "filterFrequencyComparison", "filterDecibelGain", "filterGainFrequency"],
+  resonance: ["resonantComponentDesign", "rlcMetricDesign", "resonanceCurrentVoltages"],
+  waveforms: ["phasorAddition", "phasorDivision", "waveformToPhasor", "phasorToWaveform"]
+};
+
+function givenMarkup(items) {
+  return items.map(([name, value]) => `<div><dt>${name}</dt><dd>${value}</dd></div>`).join("");
+}
+
+function newProblem() {
+  const type = pickDifferent(sets[state.set], state.lastType);
+  state.lastType = type;
+  state.problem = generators[type]();
+  state.count += 1;
+  $("#problem-number").textContent = `Problem ${String(state.count).padStart(2, "0")}`;
+  $("#problem-tag").textContent = state.problem.tag;
+  $("#problem-prompt").innerHTML = state.problem.prompt;
+  $("#problem-detail").innerHTML = state.problem.detail;
+  const circuit = $("#circuit");
+  const hasCircuit = Boolean(state.problem.image);
+  circuit.hidden = !hasCircuit;
+  circuit.innerHTML = hasCircuit ? circuitImage(state.problem.image, state.problem.imageAlt) : "";
+  $(".problem-body").className = `problem-body${hasCircuit ? "" : " no-circuit"}`;
+  $("#given-values").innerHTML = givenMarkup(state.problem.given);
+  $("#final-answer").innerHTML = state.problem.answer;
+  $("#solution-steps").innerHTML = state.problem.steps.map((step) => `<p>${step}</p>`).join("");
+  $("#answer-panel").hidden = true;
+  $("#reveal-button").hidden = false;
+  $("#answer-panel details").open = false;
+}
+
+function revealAnswer() {
+  $("#answer-panel").hidden = false;
+  $("#reveal-button").hidden = true;
+}
+
+$("#problem-set").addEventListener("change", (event) => {
+  state.set = event.target.value;
+  state.lastType = null;
+  newProblem();
+});
+$("#reveal-button").addEventListener("click", revealAnswer);
+$("#new-button").addEventListener("click", newProblem);
+document.addEventListener("keydown", (event) => {
+  if (event.target.matches("select, button, input, summary")) return;
+  if (event.key.toLowerCase() === "r") revealAnswer();
+  if (event.key.toLowerCase() === "n") newProblem();
+});
+
+newProblem();
+
+  </script>
+</body>
+</html>
