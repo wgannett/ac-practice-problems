@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-labelledby="title desc">
+  <title id="title">Phasor reference diagram</title>
+  <desc id="desc">Real and imaginary axes with two example phasors and their vector sum.</desc>
+  <rect width="640" height="300" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 235H575M315 260V35"/>
+    <path d="m565 225 14 10-14 10M305 45l10-14 10 14"/>
+    <path d="M315 235L470 135"/>
+    <path d="m455 137 18-4-9 16" fill="#111111"/>
+    <path d="M315 235L405 75"/>
+    <path d="m391 87 17-16 1 23" fill="#111111"/>
+    <path d="M315 235L560 72" stroke="#2f7d32" stroke-width="5"/>
+    <path d="m544 74 19-5-10 18" fill="#2f7d32" stroke="#2f7d32"/>
+    <path d="M470 135L560 72M405 75L560 72" stroke="#aaaaaa" stroke-dasharray="8 8"/>
+  </g>
+  <g fill="#111111" font-family="Arial, sans-serif" font-size="20" font-style="italic">
+    <text x="578" y="258">Re</text><text x="330" y="39">j</text>
+    <text x="455" y="126">A</text><text x="382" y="86">B</text>
+    <text x="530" y="57" fill="#2f7d32">A + B</text>
+  </g>
+</svg>

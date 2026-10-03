@@ -12,6 +12,7 @@ const values = {
 const circuitNames = [
   "series-rc", "series-rc-vc", "series-rl", "series-rlc", "series-rlc-voltages", "parallel-rc", "parallel-rl",
   "loaded-rc-divider", "loaded-rl-divider",
+  "phasor-reference", "sine-wave-reference",
   "series-r-lc", "series-r-ll", "series-r-cc",
   "parallel-r-lc", "parallel-r-ll", "parallel-r-cc",
   "series-r-parallel-lc", "series-r-parallel-ll", "series-r-parallel-cc",
@@ -27,6 +28,8 @@ const pick = (array) => array[Math.floor(Math.random() * array.length)];
 const BALANCE_MIN = .2;
 const BALANCE_MAX = 5;
 const TARGET_ANGLES = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75];
+const PHASOR_ANGLES = [-75, -65, -55, -45, -35, -25, -15, 15, 25, 35, 45, 55, 65, 75];
+const PHASOR_MAGNITUDES = [5, 10, 12, 15, 20, 25, 30, 40, 50];
 const S = Object.freeze({
   ZC: "Z<sub>C</sub>", ZC1: "Z<sub>C1</sub>", ZC2: "Z<sub>C2</sub>",
   ZL: "Z<sub>L</sub>", ZL1: "Z<sub>L1</sub>", ZL2: "Z<sub>L2</sub>",
@@ -185,6 +188,24 @@ function rectangular(complex, unit) {
 function polarLine(symbol, complex, unit) {
   const p = polar(complex);
   return `<div>${symbol} = ${engineering(p.magnitude, unit)} ∠ ${sig(p.angle)}°</div>`;
+}
+
+function fromPolar(magnitude, angle) {
+  const radians = angle * Math.PI / 180;
+  return { re: magnitude * Math.cos(radians), im: magnitude * Math.sin(radians) };
+}
+
+function phasorText(magnitude, angle, unit = "") {
+  return `${sig(magnitude)} ∠ ${sig(angle)}°${unit ? ` ${unit}` : ""}`;
+}
+
+function signedAngle(angle) {
+  return angle < 0 ? `− ${sig(Math.abs(angle))}°` : `+ ${sig(angle)}°`;
+}
+
+function complexText(complex) {
+  const sign = complex.im < 0 ? "−" : "+";
+  return `${sig(complex.re)} ${sign} j${sig(Math.abs(complex.im))}`;
 }
 
 function decibels(ratioMagnitude) { return 20 * Math.log10(ratioMagnitude); }
@@ -488,6 +509,81 @@ function unknownFrequency() {
   });
 }
 
+function phasorAddition() {
+  const selected = balancedComplex(() => {
+    const magnitudeA = pick(PHASOR_MAGNITUDES), angleA = pick(PHASOR_ANGLES);
+    const magnitudeB = pick(PHASOR_MAGNITUDES), angleB = pick(PHASOR_ANGLES);
+    const a = fromPolar(magnitudeA, angleA), b = fromPolar(magnitudeB, angleB), z = add(a, b);
+    const valid = polar(z).magnitude >= .25 * (magnitudeA + magnitudeB);
+    return { magnitudeA, angleA, magnitudeB, angleB, a, b, z, valid };
+  });
+  const { magnitudeA, angleA, magnitudeB, angleB, a, b, z } = selected, p = polar(z);
+  const expression = `${phasorText(magnitudeA, angleA)} + ${phasorText(magnitudeB, angleB)}`;
+  return problem({
+    type: "phasorAddition", group: "waveforms", tag: "Phasor addition",
+    image: "phasor-reference", imageAlt: "Reference diagram showing two phasors and their vector sum",
+    prompt: `Calculate <span class="math-expression">${expression}</span>.`,
+    detail: "Express the result in rectangular and polar form.",
+    given: [["A", phasorText(magnitudeA, angleA)], ["B", phasorText(magnitudeB, angleB)]],
+    answer: `<div>A + B = ${complexText(z)}</div><div>A + B = ${phasorText(p.magnitude, p.angle)}</div>`,
+    steps: [`A = ${complexText(a)}`, `B = ${complexText(b)}`, `A + B = (${sig(a.re)} + ${sig(b.re)}) + j(${sig(a.im)} + ${sig(b.im)})`, `A + B = ${complexText(z)} = ${phasorText(p.magnitude, p.angle)}`],
+    result: z, operationCheck: { operation: "add", a, b }
+  });
+}
+
+function phasorDivision() {
+  const selected = balancedComplex(() => {
+    const magnitudeA = pick(PHASOR_MAGNITUDES), angleA = pick(PHASOR_ANGLES);
+    const magnitudeB = pick(PHASOR_MAGNITUDES), angleB = pick(PHASOR_ANGLES);
+    const a = fromPolar(magnitudeA, angleA), b = fromPolar(magnitudeB, angleB), z = divide(a, b);
+    return { magnitudeA, angleA, magnitudeB, angleB, a, b, z };
+  });
+  const { magnitudeA, angleA, magnitudeB, angleB, a, b, z } = selected, p = polar(z);
+  const numerator = phasorText(magnitudeA, angleA), denominator = phasorText(magnitudeB, angleB);
+  return problem({
+    type: "phasorDivision", group: "waveforms", tag: "Phasor division",
+    image: "phasor-reference", imageAlt: "Reference diagram showing phasors on real and imaginary axes",
+    prompt: `Calculate <span class="math-fraction"><span>${numerator}</span><span>${denominator}</span></span>.`,
+    detail: "Divide the magnitudes and subtract the denominator angle from the numerator angle.",
+    given: [["Numerator", numerator], ["Denominator", denominator]],
+    answer: `<div>Result = ${phasorText(p.magnitude, p.angle)}</div><div>Result = ${complexText(z)}</div>`,
+    steps: [`Magnitude = ${sig(magnitudeA)}/${sig(magnitudeB)} = ${sig(p.magnitude)}`, `Angle = ${sig(angleA)}° − (${sig(angleB)}°) = ${sig(p.angle)}°`, `Result = ${phasorText(p.magnitude, p.angle)} = ${complexText(z)}`],
+    result: z, operationCheck: { operation: "divide", a, b }
+  });
+}
+
+function waveformToPhasor() {
+  const peak = pick(PHASOR_MAGNITUDES), f = pick(values.frequency), angle = pick(PHASOR_ANGLES);
+  const rms = peak / Math.sqrt(2), result = fromPolar(rms, angle);
+  const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
+  return problem({
+    type: "waveformToPhasor", group: "waveforms", tag: "Waveform to phasor",
+    image: "sine-wave-reference", imageAlt: "Reference diagram of a sinusoidal voltage waveform",
+    prompt: `Convert <span class="math-expression">v(t) = ${waveform}</span> to an RMS phasor.`,
+    detail: "Use cosine as the reference and convert peak amplitude to RMS.",
+    given: [["Peak", engineering(peak, "V")], ["f", engineering(f, "Hz")], ["Phase", `${angle}°`]],
+    answer: `<div>V = ${phasorText(rms, angle, "V RMS")}</div>`,
+    steps: [`V<sub>rms</sub> = V<sub>p</sub>/√2 = ${engineering(peak, "V")}/√2 = ${engineering(rms, "V")}`, `The cosine phase becomes the phasor angle: ${angle}°.`, `V = ${phasorText(rms, angle, "V RMS")}`],
+    result, waveformCheck: { peak, rms, angle, direction: "to-phasor" }
+  });
+}
+
+function phasorToWaveform() {
+  const rms = pick(PHASOR_MAGNITUDES), f = pick(values.frequency), angle = pick(PHASOR_ANGLES);
+  const peak = rms * Math.sqrt(2), result = fromPolar(rms, angle);
+  const waveform = `${sig(peak)} cos(2π(${engineering(f, "Hz")})t ${signedAngle(angle)}) V`;
+  return problem({
+    type: "phasorToWaveform", group: "waveforms", tag: "Phasor to waveform",
+    image: "sine-wave-reference", imageAlt: "Reference diagram of a sinusoidal voltage waveform",
+    prompt: `Convert <span class="math-expression">V = ${phasorText(rms, angle, "V RMS")}</span> to a time-domain waveform.`,
+    detail: "Use cosine form and convert the RMS magnitude to peak amplitude.",
+    given: [["V", phasorText(rms, angle, "V RMS")], ["f", engineering(f, "Hz")]],
+    answer: `<div>v(t) = ${waveform}</div>`,
+    steps: [`V<sub>p</sub> = √2 V<sub>rms</sub> = √2(${engineering(rms, "V")}) = ${engineering(peak, "V")}`, `ω = 2πf = 2π(${engineering(f, "Hz")})`, `v(t) = ${waveform}`],
+    result, waveformCheck: { peak, rms, angle, direction: "to-waveform" }
+  });
+}
+
 function parallelSourceCurrent() {
   const { f, R, C, Xc } = balancedRC(), Vs = pick(values.voltage), ir = Vs / R, ic = Vs / Xc, total = { re: ir, im: ic }, p = polar(total);
   return problem({ type: "parallelSourceCurrent", group: "phasors", tag: "Current phasor", image: "parallel-rc", imageAlt: "Parallel RC circuit with branch currents marked",
@@ -706,20 +802,18 @@ function resonantComponentDesign() {
     const candidate = balancedResonantRLC();
     return candidate.f0 >= 100 && candidate.f0 <= 100000 ? candidate : null;
   }, "Could not generate a resonant-component design problem.");
-  const { R, L, C, f0 } = selected, solveForC = Math.random() < .5, outputAcrossR = Math.random() < .5;
-  const filterType = outputAcrossR ? "band-pass" : "band-stop";
-  const image = outputAcrossR ? "rlc-output-r" : "rlc-output-lc";
-  const imageAlt = `Series RLC filter with output across ${outputAcrossR ? "the resistor" : "the inductor-capacitor pair"}`;
+  const { R, L, C, f0 } = selected, solveForC = Math.random() < .5;
   const symbol = solveForC ? "C" : "L", component = solveForC ? C : L, unit = solveForC ? "F" : "H";
   const knownGiven = solveForC ? ["L", engineering(L, "H")] : ["C", engineering(C, "F")];
   const formula = solveForC ? `C = 1/[(2π${S.f0})²L]` : `L = 1/[(2π${S.f0})²C]`;
   return problem({
-    type: "resonantComponentDesign", group: "filters", tag: "Series RLC filter design", image, imageAlt,
-    prompt: `What type of filter is this? Find ${symbol} for the specified resonant frequency.`,
-    detail: "Use the series-resonance relationship and the marked output location.",
+    type: "resonantComponentDesign", group: "resonance", tag: "RLC resonance design",
+    image: "series-rlc", imageAlt: "Series RLC circuit",
+    prompt: `Find ${symbol} for the specified resonant frequency.`,
+    detail: "Use the series-resonance relationship.",
     given: [["R", engineering(R, "Ω")], knownGiven, [S.f0, engineering(f0, "Hz")]],
-    answer: `<div>Filter type: ${filterType}</div><div>${symbol} = ${engineering(component, unit)}</div>`,
-    steps: [`The output location makes this a ${filterType} filter.`, `${S.f0} = 1/(2π√(LC))`, `${formula} = ${engineering(component, unit)}`],
+    answer: `<div>${symbol} = ${engineering(component, unit)}</div>`,
+    steps: [`${S.f0} = 1/(2π√(LC))`, `${formula} = ${engineering(component, unit)}`],
     result: { re: component, im: 0 }, angleGuard: false,
     designCheck: { actual: 1 / (TWO_PI * Math.sqrt(L * C)), target: f0 }, designMode: solveForC ? "C" : "L"
   });
@@ -730,23 +824,21 @@ function rlcMetricDesign() {
     const candidate = balancedResonantRLC(), quality = candidate.X0 / candidate.R;
     return candidate.f0 >= 100 && candidate.f0 <= 100000 && quality >= .5 ? candidate : null;
   }, "Could not generate an RLC metric-design problem.");
-  const { R, L, C, X0, f0 } = selected, designQ = Math.random() < .5, outputAcrossR = Math.random() < .5;
+  const { R, L, C, X0, f0 } = selected, designQ = Math.random() < .5;
   const bandwidth = R / (TWO_PI * L), quality = X0 / R;
-  const filterType = outputAcrossR ? "band-pass" : "band-stop";
-  const image = outputAcrossR ? "rlc-output-r" : "rlc-output-lc";
-  const imageAlt = `Series RLC filter with output across ${outputAcrossR ? "the resistor" : "the inductor-capacitor pair"}`;
   const metricName = designQ ? "quality factor" : "bandwidth";
   const metricGiven = designQ ? ["Q", sig(quality)] : ["Bandwidth", engineering(bandwidth, "Hz")];
   const calculation = designQ
     ? `R = √(L/C)/Q = ${engineering(R, "Ω")}`
     : `R = 2πL(Bandwidth) = ${engineering(R, "Ω")}`;
   return problem({
-    type: "rlcMetricDesign", group: "filters", tag: "Series RLC filter design", image, imageAlt,
-    prompt: `What type of filter is this? Find R for the specified ${metricName}.`,
+    type: "rlcMetricDesign", group: "resonance", tag: "RLC resonance design",
+    image: "series-rlc", imageAlt: "Series RLC circuit",
+    prompt: `Find R for the specified ${metricName}.`,
     detail: "Use the series-RLC bandwidth or quality-factor relationship.",
     given: [["L", engineering(L, "H")], ["C", engineering(C, "F")], [S.f0, engineering(f0, "Hz")], metricGiven],
-    answer: `<div>Filter type: ${filterType}</div><div>R = ${engineering(R, "Ω")}</div>`,
-    steps: [`The output location makes this a ${filterType} filter.`, designQ ? `Q = √(L/C)/R` : `Bandwidth = R/(2πL)`, calculation],
+    answer: `<div>R = ${engineering(R, "Ω")}</div>`,
+    steps: [designQ ? `Q = √(L/C)/R` : `Bandwidth = R/(2πL)`, calculation],
     result: { re: R, im: 0 }, angleGuard: false,
     designCheck: { actual: designQ ? X0 / R : R / (TWO_PI * L), target: designQ ? quality : bandwidth }, designMode: designQ ? "Q" : "bandwidth"
   });
@@ -815,7 +907,61 @@ function filterDecibelGain() {
   });
 }
 
-const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, filterFrequencyComparison, filterDecibelGain };
+function filterGainFrequency() {
+  const useRC = Math.random() < .5, lowpass = Math.random() < .5, targetDb = pick([-1, -3, -6, -10, -12]);
+  const targetRatio = 10 ** (targetDb / 20);
+  const selected = validCandidate(() => {
+    const R = pick(values.resistance), component = pick(useRC ? values.capacitance : values.inductance);
+    const fc = useRC ? 1 / (TWO_PI * R * component) : R / (TWO_PI * component);
+    const normalizedFrequency = lowpass
+      ? Math.sqrt(1 / (targetRatio * targetRatio) - 1)
+      : targetRatio / Math.sqrt(1 - targetRatio * targetRatio);
+    const f = fc * normalizedFrequency;
+    return fc >= 100 && fc <= 100000 && f >= 10 && f <= 1000000 ? { R, component, fc, f } : null;
+  }, "Could not generate an inverse filter-gain problem.");
+  const { R, component, fc, f } = selected;
+  const family = useRC ? "RC" : "LR", unit = useRC ? "F" : "H";
+  const image = useRC ? (lowpass ? "rc-lowpass" : "rc-highpass") : (lowpass ? "lr-output-r" : "lr-output-l");
+  const imageAlt = `${family} filter with output across the ${useRC ? (lowpass ? "capacitor" : "resistor") : (lowpass ? "resistor" : "inductor")}`;
+  const ratio = useRC ? rcFilterRatio(R, component, f, lowpass) : lrFilterRatio(R, component, f, lowpass);
+  const actualDb = decibels(polar(ratio).magnitude), filterType = lowpass ? "low-pass" : "high-pass";
+  const frequencyEquation = lowpass
+    ? `f = ${S.fc}√(1/M² − 1)`
+    : `f = ${S.fc}M/√(1 − M²)`;
+  return problem({
+    type: "filterGainFrequency", group: "filters", tag: `${family} filter`, image, imageAlt,
+    prompt: "What type of filter is this? Find the frequency that gives the specified voltage gain.",
+    detail: "Convert the dB value to a voltage ratio, then solve the impedance-divider magnitude for frequency.",
+    given: [["R", engineering(R, "Ω")], [useRC ? "C" : "L", engineering(component, unit)], ["Gain", `${targetDb} dB`]],
+    answer: `<div>Filter type: ${filterType}</div><div>f = ${engineering(f, "Hz")}</div><div>|${S.Vout}/${S.Vin}| = ${sig(targetRatio)}</div>`,
+    steps: [`The output location makes this a ${filterType} filter.`, `M = |${S.Vout}/${S.Vin}| = 10^(Gain/20) = ${sig(targetRatio)}`, `${S.fc} = ${useRC ? "1/(2πRC)" : "R/(2πL)"} = ${engineering(fc, "Hz")}`, `${frequencyEquation} = ${engineering(f, "Hz")}`, `Check: 20 log₁₀|${S.Vout}/${S.Vin}| = ${sig(actualDb)} dB.`],
+    result: ratio, gainCheck: { ratioMagnitude: polar(ratio).magnitude, db: actualDb }, designCheck: { actual: actualDb, target: targetDb }, circuitFamily: family
+  });
+}
+
+function resonanceCurrentVoltages() {
+  const selected = validCandidate(() => {
+    const candidate = balancedResonantRLC(), quality = candidate.X0 / candidate.R;
+    return candidate.f0 >= 100 && candidate.f0 <= 100000 && quality >= .5 ? candidate : null;
+  }, "Could not generate a resonance voltage problem.");
+  const { R, L, C, X0, f0 } = selected, Vs = pick(values.voltage);
+  const currentMagnitude = Vs / R, quality = X0 / R;
+  const current = { re: currentMagnitude, im: 0 };
+  const vl = { re: 0, im: currentMagnitude * X0 }, vc = { re: 0, im: -currentMagnitude * X0 };
+  return problem({
+    type: "resonanceCurrentVoltages", group: "resonance", tag: "RLC resonance",
+    image: "series-rlc-voltages", imageAlt: "Series RLC circuit with component-voltage polarities marked",
+    prompt: `Find ${S.f0}, I, ${S.VL}, and ${S.VC} at resonance.`,
+    detail: "At series resonance, the inductive and capacitive reactances cancel and the total impedance is R.",
+    given: [[S.Vs, `${engineering(Vs, "V")} ∠ 0°`], ["R", engineering(R, "Ω")], ["L", engineering(L, "H")], ["C", engineering(C, "F")]],
+    answer: `<div>${S.f0} = ${engineering(f0, "Hz")}</div>${polarLine("I", current, "A")}${polarLine(S.VL, vl, "V")}${polarLine(S.VC, vc, "V")}<div>Q = ${sig(quality)}</div>`,
+    steps: [`${S.f0} = 1/(2π√(LC)) = ${engineering(f0, "Hz")}`, `At resonance, ${S.ZL} + ${S.ZC} = 0 and Z = R.`, `I = ${S.Vs}/R = ${engineering(currentMagnitude, "A")} ∠ 0°`, `X<sub>0</sub> = 2π${S.f0}L = √(L/C) = ${engineering(X0, "Ω")}`, `${S.VL} = I(jX<sub>0</sub>) = ${engineering(polar(vl).magnitude, "V")} ∠ 90°`, `${S.VC} = I(−jX<sub>0</sub>) = ${engineering(polar(vc).magnitude, "V")} ∠ −90°`, `${S.VL} + ${S.VC} = 0, so ${S.Vs} = ${S.VR}.`],
+    result: current, angleGuard: false,
+    resonanceCheck: { reactiveSum: add(vl, vc), sourceMagnitude: Vs, resistorVoltageMagnitude: currentMagnitude * R }
+  });
+}
+
+const generators = { seriesRCImpedance, seriesRLImpedance, seriesRLCImpedance, parallelRCImpedance, parallelRLImpedance, seriesThreeImpedance, parallelThreeImpedance, seriesParallelImpedance, parallelSeriesImpedance, seriesCurrent, capacitorVoltage, seriesComponentVoltages, parallelSourceCurrent, loadedVoltageDivider, requiredSourceVoltage, unknownComponent, unknownFrequency, phasorAddition, phasorDivision, waveformToPhasor, phasorToWaveform, seriesResistorPower, mixedResistorPower, rcFilterResponse, lrFilterResponse, cutoffFrequency, rlcFilterMetrics, filterComponentDesign, resonantComponentDesign, rlcMetricDesign, resonanceCurrentVoltages, filterFrequencyComparison, filterDecibelGain, filterGainFrequency };
 const sets = {
   mixed: Object.keys(generators),
   impedance: ["seriesRCImpedance", "seriesRLImpedance", "seriesRLCImpedance", "parallelRCImpedance", "parallelRLImpedance"],
@@ -823,7 +969,9 @@ const sets = {
   phasors: ["seriesCurrent", "capacitorVoltage", "seriesComponentVoltages", "parallelSourceCurrent", "loadedVoltageDivider", "requiredSourceVoltage"],
   unknown: ["unknownComponent", "unknownFrequency"],
   power: ["seriesResistorPower", "mixedResistorPower"],
-  filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics", "filterComponentDesign", "resonantComponentDesign", "rlcMetricDesign", "filterFrequencyComparison", "filterDecibelGain"]
+  filters: ["rcFilterResponse", "lrFilterResponse", "cutoffFrequency", "rlcFilterMetrics", "filterComponentDesign", "filterFrequencyComparison", "filterDecibelGain", "filterGainFrequency"],
+  resonance: ["resonantComponentDesign", "rlcMetricDesign", "resonanceCurrentVoltages"],
+  waveforms: ["phasorAddition", "phasorDivision", "waveformToPhasor", "phasorToWaveform"]
 };
 
 function givenMarkup(items) {
