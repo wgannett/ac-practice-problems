@@ -33,6 +33,13 @@
           </div>
         </div>
 
+        <div class="control-group">
+          <label for="problem-type">Problem type</label>
+          <div class="select-wrap">
+            <select id="problem-type" aria-label="Problem type"></select>
+          </div>
+        </div>
+
         <div class="control-group focus-note">
           <span class="control-label">Practice scope</span>
           <p>Ideal components, RMS phasors, and source phase 0°. Resistance and reactance stay within a factor of five.</p>
@@ -57,7 +64,8 @@
 
         <div class="prompt-block">
           <h2 id="problem-prompt">Find the equivalent impedance seen by the source.</h2>
-          <p id="problem-detail">Express the result in rectangular and polar form.</p>
+          <p id="problem-detail" hidden></p>
+          <div id="problem-supplement" hidden></div>
         </div>
 
         <div class="problem-body">
@@ -65,6 +73,13 @@
           <div class="given-panel">
             <h3>Given</h3>
             <dl id="given-values"></dl>
+          </div>
+        </div>
+
+        <div class="hint-area">
+          <div id="hint-panel" class="hint-panel" hidden>
+            <div id="hint-heading" class="hint-heading">Hint 1 of 2</div>
+            <div id="hint-text" class="hint-text"></div>
           </div>
         </div>
 
@@ -83,6 +98,7 @@
         </div>
 
         <div class="actions">
+          <button id="hint-button" class="button button-secondary" type="button">Show hint</button>
           <button id="reveal-button" class="button button-primary" type="button">Reveal answer</button>
           <button id="new-button" class="button button-secondary" type="button">New problem <span aria-hidden="true">→</span></button>
         </div>
@@ -92,9 +108,9 @@
   </main>
 
   <footer>
-    <p><kbd>R</kbd> reveal · <kbd>N</kbd> new problem</p>
+    <p><kbd>H</kbd> hint · <kbd>R</kbd> reveal · <kbd>N</kbd> new problem</p>
     <p class="analytics-note">Anonymous usage statistics</p>
-    <p class="version-label">v0.15</p>
+    <p class="version-label">v0.16</p>
   </footer>
 
   <script src="app.js"></script>

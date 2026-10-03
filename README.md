@@ -1,15 +1,16 @@
-# AC Circuit Practice Problem Generator v0.15
+# AC Circuit Practice Problem Generator v0.16
 
 A browser-based AC circuit practice tool for introductory electronics students.
 
-## What changed from v0.14
+## What changed from v0.15
 
-- Added production-only GoatCounter page-view and anonymous interaction tracking.
-- Added events for generated problems, revealed answers, and category selections without sending generated values or student identifiers.
-- Added complex-number multiplication problems.
-- Changed multiplication and division prompts so zero or one operand is given in polar form; both operands are never polar.
-- Centered vertical resistors, capacitors, and inductors between their circuit rails across filter, parallel, and loaded-divider artwork.
-- Updated the subtle footer version label to v0.15.
+- Added two progressive hints to every template. Strategy text is hidden until requested, while essential answer-format and reference instructions remain visible.
+- Added a category-dependent Problem type selector, with mixed practice as the default within each category.
+- Added four qualitative filter templates covering limiting behavior, phase lead/lag, response-curve descriptions, and series-RLC behavior around resonance.
+- Changed complex multiplication and division hints and solutions to convert both operands to polar form, then operate on magnitudes and angles.
+- Added anonymous GoatCounter events for hints and problem-type selections without sending generated values or student identifiers.
+- Preserved the small analytics disclosure in the footer without adding a consent banner.
+- Updated the subtle footer version label to v0.16.
 
 ## Included template families
 
@@ -48,17 +49,21 @@ A browser-based AC circuit practice tool for introductory electronics students.
 33. Complex-number division with rectangular or mixed rectangular/polar inputs
 34. Time-domain cosine waveform to RMS phasor conversion
 35. RMS phasor to time-domain cosine waveform conversion
+36. Qualitative RC or LR low- and high-frequency limiting behavior
+37. Qualitative RC or LR output phase lead/lag
+38. Qualitative RC or LR magnitude-response matching
+39. Qualitative series-RLC behavior at and away from resonance
 
 All values and answers are generated locally from explicit circuit formulas. No AI or server is involved in generating problems.
 
 ## Run it
 
-Open `ac-circuit-practice-v0.15.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required. Analytics runs only at `https://wgannett.github.io/ac-practice-problems/`; local copies are not tracked.
+Open `ac-circuit-practice-v0.16.html` directly in a modern browser. CSS, JavaScript, and circuit artwork are embedded, so no web server is required. Analytics runs only at `https://wgannett.github.io/ac-practice-problems/`; local copies are not tracked.
 
 The separate source files and `assets/` directory remain available for editing. Run `node build-standalone.mjs` after making changes to rebuild the standalone file.
 
 ## Test it
 
-Run `node smoke-test.mjs`. The test generates 100 examples from every template family, checks the new phasor, waveform, inverse-gain, and resonance calculations, verifies required interface hooks, and confirms that all circuit images are embedded in the standalone build.
+Run `node smoke-test.mjs`. The test generates 100 examples from every template family, checks qualitative filter logic, two-level hints, subtype coverage, numerical calculations, required interface hooks, and confirms that all circuit images are embedded in the standalone build.
 
-Keyboard shortcuts: `R` reveals the answer and `N` generates a new problem.
+Keyboard shortcuts: `H` reveals the next hint, `R` reveals the answer, and `N` generates a new problem.

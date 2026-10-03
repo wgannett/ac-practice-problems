@@ -41,7 +41,7 @@ const product = vm.runInContext("multiply({re: .05, im: .05}, {re: 0, im: -100})
 nearly(product.re, 5); nearly(product.im, -5);
 
 const generatorNames = vm.runInContext("Object.keys(generators)", context);
-if (generatorNames.length !== 35) throw new Error(`Expected 35 generators, found ${generatorNames.length}`);
+if (generatorNames.length !== 39) throw new Error(`Expected 39 generators, found ${generatorNames.length}`);
 if (source.includes("parallelResistorPower")) throw new Error("A trivial resistor-directly-across-source power template remains");
 const advancedVariants = new Map();
 const unknownVariants = new Map();
@@ -49,11 +49,16 @@ const loadedVariants = new Set();
 const filterDesignVariants = new Map();
 const gainFrequencyVariants = new Set();
 const complexFormVariants = new Map();
+const qualitativeVariants = new Map();
 for (const name of generatorNames) {
   for (let i = 0; i < 100; i += 1) {
     const result = vm.runInContext(`generators.${name}()`, context);
     if (![result.result.re, result.result.im].every(Number.isFinite)) throw new Error(`${name}: non-finite result`);
     if (!result.answer || !result.steps.length || !result.given.length) throw new Error(`${name}: incomplete problem`);
+    if (!Array.isArray(result.hints) || result.hints.length !== 2 || result.hints.some((hint) => !hint)) throw new Error(`${name}: expected two progressive hints`);
+    if (/combine the two reactive branches|parallel-impedance formula|impedance voltage divider|series-resonance relationships/i.test(result.detail)) {
+      throw new Error(`${name}: strategy text remains visible below the problem title`);
+    }
     if (result.group === "waveforms" && result.image !== null) throw new Error(`${name}: phasor/waveform problems must not use a generic diagram`);
     if (result.group !== "waveforms" && !result.image) throw new Error(`${name}: circuit diagram is missing`);
     const visibleText = [result.prompt, result.detail, result.answer, ...result.steps, ...result.given.flat()].join(" ");
@@ -62,7 +67,7 @@ for (const name of generatorNames) {
       const angle = Math.abs(Math.atan2(result.result.im, result.result.re) * 180 / Math.PI);
       if (angle < 10 || angle > 80) throw new Error(`${name}: angle ${angle.toFixed(2)}° is outside the intended practice range`);
     }
-    if (result.group === "filters" && (/low-pass|high-pass/i.test(result.tag) || !/what type of filter/i.test(result.prompt))) {
+    if (result.group === "filters" && (/low-pass|high-pass/i.test(result.tag) || !/(what type of filter|identify the filter type)/i.test(result.prompt))) {
       throw new Error(`${name}: filter type is disclosed before the answer`);
     }
     if (name === "rlcFilterMetrics") {
@@ -143,6 +148,12 @@ for (const name of generatorNames) {
     if (["phasorMultiplication", "phasorDivision"].includes(name)) {
       if (!Array.isArray(result.inputForms) || result.inputForms.length !== 2) throw new Error(`${name}: missing input-form metadata`);
       if (result.inputForms.filter((form) => form === "polar").length > 1) throw new Error(`${name}: both operands were shown in polar form`);
+      const hintText = result.hints.join(" ");
+      if (!/both operands in polar form/i.test(hintText)) throw new Error(`${name}: hints do not direct students to polar form`);
+      if (name === "phasorMultiplication" && !/multiply the magnitudes and add the angles/i.test(hintText)) throw new Error(`${name}: polar multiplication rule is missing`);
+      if (name === "phasorDivision" && !/divide the magnitudes and subtract the denominator angle/i.test(hintText)) throw new Error(`${name}: polar division rule is missing`);
+      if (/conjugate/i.test([...result.hints, ...result.steps].join(" "))) throw new Error(`${name}: conjugate method remains in the teaching path`);
+      if (result.answer.indexOf("∠") > result.answer.indexOf("j")) throw new Error(`${name}: polar answer should be shown before rectangular form`);
       if (!complexFormVariants.has(name)) complexFormVariants.set(name, new Set());
       complexFormVariants.get(name).add(result.inputForms.join(":"));
     }
@@ -155,6 +166,31 @@ for (const name of generatorNames) {
       nearly(result.resonanceCheck.reactiveSum.re, 0);
       nearly(result.resonanceCheck.reactiveSum.im, 0);
       nearly(result.resonanceCheck.resistorVoltageMagnitude, result.resonanceCheck.sourceMagnitude);
+    }
+    if (result.qualitativeCheck) {
+      const check = result.qualitativeCheck;
+      if (!qualitativeVariants.has(name)) qualitativeVariants.set(name, new Set());
+      qualitativeVariants.get(name).add(check.filterType);
+      if (check.kind === "limits") {
+        const expected = check.filterType === "low-pass"
+          ? ["decreases", "source", "zero"]
+          : ["increases", "zero", "source"];
+        if ([check.trend, check.lowOutput, check.highOutput].join(":") !== expected.join(":")) throw new Error(`${name}: incorrect limiting behavior`);
+      }
+      if (check.kind === "phase") {
+        const expected = check.filterType === "low-pass" ? "lags" : "leads";
+        if (check.relation !== expected) throw new Error(`${name}: incorrect phase relationship`);
+      }
+      if (check.kind === "curve") {
+        const expected = check.filterType === "low-pass" ? "A" : "B";
+        if (check.choice !== expected) throw new Error(`${name}: incorrect response-curve choice`);
+        if (!result.supplement || (result.supplement.match(/class="curve-option"/g) || []).length !== 4) throw new Error(`${name}: four response sketches were not supplied`);
+      }
+      if (check.kind === "rlc") {
+        const expected = check.filterType === "band-pass" ? "greatest" : "smallest";
+        if (check.resonanceBehavior !== expected) throw new Error(`${name}: incorrect resonance behavior`);
+      }
+      if (/f\s*(?:≪|<<|=|≫|>>).*f<sub>c<\/sub>/i.test(result.prompt)) throw new Error(`${name}: excluded normalized-frequency question was added`);
     }
   }
 }
@@ -178,9 +214,37 @@ for (const name of ["phasorMultiplication", "phasorDivision"]) {
     if (!variants.has(expected)) throw new Error(`${name}: did not generate ${expected} inputs`);
   }
 }
+for (const [name, expected] of [
+  ["qualitativeFilterLimits", ["low-pass", "high-pass"]],
+  ["qualitativeFilterPhase", ["low-pass", "high-pass"]],
+  ["qualitativeFilterCurve", ["low-pass", "high-pass"]],
+  ["qualitativeRLCBehavior", ["band-pass", "band-stop"]]
+]) {
+  const variants = qualitativeVariants.get(name) || new Set();
+  if (!expected.every((variant) => variants.has(variant))) throw new Error(`${name}: did not generate all qualitative variants`);
+}
+
+const subtypeSummary = JSON.parse(vm.runInContext("JSON.stringify(Object.fromEntries(Object.entries(subtypeSets).map(([group, options]) => [group, options.map(({value, generators}) => ({value, generators}))])))", context));
+if (subtypeSummary.mixed.length !== 1 || subtypeSummary.mixed[0].value !== "all") throw new Error("Mixed practice should expose only the all-types subtype");
+for (const category of ["impedance", "advanced", "phasors", "unknown", "power", "filters", "resonance", "waveforms"]) {
+  if (!subtypeSummary[category] || subtypeSummary[category][0].value !== "all" || subtypeSummary[category].length < 2) throw new Error(`${category}: subtype choices are incomplete`);
+}
+const qualitativeSubtype = subtypeSummary.filters.find((option) => option.value === "qualitative");
+if (!qualitativeSubtype || qualitativeSubtype.generators.length !== 4) throw new Error("Filters: qualitative subtype is incomplete");
+
+vm.runInContext('state.set = "filters"; populateProblemTypes(); state.subtype = "qualitative"; state.lastType = null; newProblem()', context);
+const selectedQualitativeType = vm.runInContext("state.problem.type", context);
+if (!qualitativeSubtype.generators.includes(selectedQualitativeType)) throw new Error("Qualitative subtype generated a problem outside its selection");
+vm.runInContext("showHint()", context);
+if (element("#hint-panel").hidden || !/Hint 1 of 2/.test(element("#hint-heading").textContent)) throw new Error("First progressive hint did not render");
+const firstHintMarkup = element("#hint-text").innerHTML;
+vm.runInContext("showHint()", context);
+if (!element("#hint-text").innerHTML.includes(firstHintMarkup) || !/Hints 1–2 of 2/.test(element("#hint-heading").textContent)) throw new Error("Second hint did not preserve the first hint");
+vm.runInContext("revealAnswer()", context);
+if (element("#answer-panel").hidden || !element("#hint-button").hidden) throw new Error("Answer reveal did not complete the progressive-hint flow");
 
 const html = fs.readFileSync(new URL("./index.html", import.meta.url), "utf8");
-for (const id of ["problem-set", "circuit", "given-values", "answer-panel", "reveal-button", "new-button"]) {
+for (const id of ["problem-set", "problem-type", "problem-supplement", "circuit", "given-values", "hint-panel", "hint-button", "answer-panel", "reveal-button", "new-button"]) {
   if (!html.includes(`id="${id}"`)) throw new Error(`Missing UI element: ${id}`);
 }
 for (const removedText of ["Impedance Lab", "Included in", "Designed for practice", ">RC filters<"]) {
@@ -190,7 +254,7 @@ if (!html.includes("AC circuit practice problem generator")) throw new Error("Pa
 for (const category of ["advanced", "unknown", "power", "resonance", "waveforms"]) {
   if (!html.includes(`value="${category}"`)) throw new Error(`Missing problem category: ${category}`);
 }
-if (!html.includes('<p class="version-label">v0.15</p>')) throw new Error("Visible v0.15 footer label is missing");
+if (!html.includes('<p class="version-label">v0.16</p>')) throw new Error("Visible v0.16 footer label is missing");
 if (!html.includes('<link rel="canonical" href="https://wgannett.github.io/ac-practice-problems/">')) throw new Error("Production canonical URL is missing");
 if (/Work the problem on paper|answer-placeholder|class="pencil"/.test(html)) throw new Error("Removed pre-answer prompt is still present");
 
@@ -232,16 +296,18 @@ for (const expected of [
   'no_session: true',
   'trackUsage("problem-generated", state.set, type)',
   'trackUsage("answer-revealed", state.set, state.problem.type)',
-  'trackUsage("category-selected", state.set)'
+  'trackUsage("category-selected", state.set)',
+  'trackUsage("problem-type-selected", state.set, state.subtype)',
+  'trackUsage("hint-revealed", state.set'
 ]) {
   if (!source.includes(expected)) throw new Error(`Analytics configuration is missing: ${expected}`);
 }
 
-const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.15.html", import.meta.url), "utf8");
+const standalone = fs.readFileSync(new URL("./ac-circuit-practice-v0.16.html", import.meta.url), "utf8");
 if (!standalone.includes("<style>") || !standalone.includes("window.CIRCUIT_ASSETS")) throw new Error("Standalone assets are not embedded");
 if (standalone.includes('href="styles.css"') || standalone.includes('src="app.js"')) throw new Error("Standalone file still references external assets");
 for (const name of assetNames) {
   if (!standalone.includes(`\"${name}\":\"data:image/svg+xml;base64,`)) throw new Error(`${name}: not embedded`);
 }
 
-console.log("Smoke test passed: 3,500 randomized problems, 35 generators, mixed-form complex arithmetic, production-only usage tracking, magnitude-only source-voltage checks, centered vertical components, 22 standardized AC sources, and 28 circuit assets.");
+console.log("Smoke test passed: 3,900 randomized problems, 39 generators, two-level hints, category subtypes, qualitative filter checks, mixed-form complex arithmetic, production-only usage tracking, 22 standardized AC sources, and 28 circuit assets.");

@@ -44,6 +44,7 @@ h1 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.65rem); line-height: 1.1; letter
 .select-wrap { position: relative; }
 .select-wrap::after { content: "⌄"; position: absolute; right: 12px; top: 9px; pointer-events: none; color: var(--ink); }
 select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1px solid var(--ink); border-radius: 0; color: var(--ink); background: #ffffff; cursor: pointer; }
+select:disabled { color: var(--ink-soft); background: #f3f3f3; cursor: default; }
 .focus-note { padding: 14px; border-left: 4px solid var(--accent); background: #fffbe6; }
 .focus-note p { margin: 0; color: var(--ink-soft); font-size: .8rem; line-height: 1.55; }
 .conventions { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); }
@@ -59,6 +60,12 @@ select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1p
 .prompt-block { padding: 28px 32px 12px; }
 .prompt-block h2 { margin-bottom: 8px; font-family: inherit; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 650; letter-spacing: -.02em; }
 .prompt-block p { color: var(--ink-soft); line-height: 1.5; }
+.curve-choices { margin-top: 22px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.curve-option { padding: 8px; border: 1px solid var(--line-dark); background: #ffffff; }
+.curve-option span { display: block; margin-bottom: 4px; font-family: "Courier New", monospace; font-size: .8rem; font-weight: 800; }
+.curve-option svg { display: block; width: 100%; height: auto; }
+.curve-option .curve-axis { fill: none; stroke: var(--line-dark); stroke-width: 1.5; }
+.curve-option .curve-line { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
 .math-expression { white-space: nowrap; font-family: Georgia, "Times New Roman", serif; font-weight: 500; }
 .math-fraction { display: inline-grid; grid-template-rows: auto auto; vertical-align: middle; margin: 0 .2em; font-family: Georgia, "Times New Roman", serif; font-weight: 500; text-align: center; line-height: 1.15; }
 .math-fraction > span:first-child { padding: 0 .22em .1em; border-bottom: 1.5px solid currentColor; }
@@ -74,7 +81,13 @@ select { width: 100%; appearance: none; padding: 10px 34px 10px 11px; border: 1p
 .given-panel dt { font-family: Georgia, serif; font-style: italic; }
 .given-panel dd { margin: 0; font-family: "Courier New", monospace; font-weight: 700; text-align: right; }
 
-.answer-area { margin: 0 32px; border-top: 1px dashed var(--line-dark); }
+.hint-area { margin: 0 32px; }
+.hint-panel { padding: 16px 18px; border-left: 4px solid var(--accent); background: #fffbe6; }
+.hint-heading { margin-bottom: 7px; color: var(--ink); font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.hint-text { color: var(--ink-soft); line-height: 1.55; }
+.hint-text p { margin-bottom: 0; }
+.hint-text p + p { margin-top: 8px; }
+.answer-area { margin: 18px 32px 0; border-top: 1px dashed var(--line-dark); }
 .answer-panel { padding: 20px 0 8px; }
 .answer-heading { display: flex; align-items: center; justify-content: space-between; color: var(--success); font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .checkmark { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; background: var(--success); color: white; }
@@ -121,8 +134,10 @@ kbd { padding: 2px 5px; border: 1px solid var(--line-dark); background: var(--pa
   .controls { grid-template-columns: 1fr; padding: 20px; }
   .prompt-block, .problem-body { padding-left: 20px; padding-right: 20px; }
   .problem-body { padding-top: 8px; }
-  .answer-area { margin: 0 20px; }
+  .hint-area { margin: 0 20px; }
+  .answer-area { margin: 18px 20px 0; }
   .actions { padding: 20px; flex-direction: column; }
+  .curve-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .button { width: 100%; }
   .given-panel { display: block; }
   .template-index ol { columns: 1; }
